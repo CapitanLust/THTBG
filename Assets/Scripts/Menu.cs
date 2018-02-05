@@ -1,8 +1,7 @@
-﻿using System.Collections;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Networking;
 
 public class Menu : MonoBehaviour {
 
@@ -11,6 +10,7 @@ public class Menu : MonoBehaviour {
     //   data in static script 
     //    and no files for 1 machine debugging
 
+    public NetworkManager netManager;
 
     void Start()
     {
@@ -18,7 +18,18 @@ public class Menu : MonoBehaviour {
         ui.sl_PlayerColor.value = UnityEngine.Random.Range(0, 5);
         ui.inp_Nik.text = "d-" + UnityEngine.Random.Range(100, 999);
         OnInpNikChanged(); OnSliderColorChanged(); // forced calls
+        
+    }
 
+    public void Create()
+    {
+        netManager.StartHost();
+    }
+
+    public void Connect()
+    {
+        netManager.networkAddress = ui.inp_ip.text;
+        netManager.StartClient();
     }
 
     #region UI part
@@ -28,7 +39,7 @@ public class Menu : MonoBehaviour {
     [Serializable]
     public class UIContainer
     {
-        public InputField inp_Nik;
+        public InputField inp_Nik, inp_ip;
         public Slider sl_PlayerColor;
         public Text tx_PlayerColor;
     }
