@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 1.1 Наименование
 Tactical Half-Turn-Basef Game [THTBG].
 1.2 Область применения
@@ -116,3 +117,6 @@ THTBG выполняет:
 
 9 Приложения 
 Документация Unity Engine. URL: https://docs.unity3d.com/ScriptReference/
+=======
+**s**
+>>>>>>> origin/master
