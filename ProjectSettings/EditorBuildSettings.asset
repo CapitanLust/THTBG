@@ -11,3 +11,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Lobby.unity
     guid: 8583dacd7fdb6fa4fb4eaaa549358be8
+  - enabled: 1
+    path: Assets/Battlefield.unity
+    guid: 5114454e6c4c28f47839cef3f6177754

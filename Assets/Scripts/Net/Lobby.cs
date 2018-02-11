@@ -11,6 +11,10 @@ public class Lobby : NetworkBehaviour {
 
     public List<Player> players;
 
+    public LobbyUI ui;
+
+
+
     private void Awake()
     {
         netManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
@@ -18,34 +22,24 @@ public class Lobby : NetworkBehaviour {
         DontDestroyOnLoad(gameObject);
     }
 
-        
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+
+        ui.btn_StartGame.gameObject.SetActive(true);
+    }
+
+
+    public void StartGame()
+    {
+        netManager.ServerChangeScene("Battlefield");
+    }
+
     public void AddPlayer(Player p)
     {
         players.Add(p);
-        ui_UpdateTxServerList();        
-    }
-
-    #region UI part
-    // TODO Lobby_UI to external script!
-
-    void ui_UpdateTxServerList()
-    {
-        ui.tx_PlayerList.text = "Players:\n";
-
-        foreach (var p in players)
-            ui.tx_PlayerList.text += p.Nik
-                + " <Color=" + p.Color.ToHex() + ">◘</Color>\n";
+        ui.UpdateTxServerList();        
     }
 
     
-
-    public UIContainer ui;
-
-    [Serializable]
-    public class UIContainer
-    {
-        public Text tx_PlayerList;
-    }
-
-    #endregion
 }

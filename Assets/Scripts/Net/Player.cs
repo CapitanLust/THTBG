@@ -15,6 +15,14 @@ public class Player : NetworkBehaviour  {
     [SyncVar(hook = "Registrate")]
     public bool ReadyToRegistrate = false;
 
+    [SyncVar] public bool isAlive = false;
+    [SyncVar] public bool isReady = false;
+
+    [SyncVar]
+    public Batch batch;
+
+    #region Initiative part
+
     void Registrate(bool ready)
     {
         if(ReadyToRegistrate = ready)
@@ -36,6 +44,8 @@ public class Player : NetworkBehaviour  {
     {
         base.OnStartClient();
 
+        Debug.Log("a1");
+
         if (SceneManager.GetActiveScene().name == "Lobby")
         {
             var lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
@@ -46,6 +56,8 @@ public class Player : NetworkBehaviour  {
         DontDestroyOnLoad(gameObject);
     }
 
+    
+
     [Command]
     void CmdSetMyParameters(string nik, Cmn.EPlayerColor color)
     {
@@ -53,5 +65,21 @@ public class Player : NetworkBehaviour  {
         Color = color;
         ReadyToRegistrate = true;
     }
+
+    #endregion
+
+
+    #region Playing
+
+    
+
+    #endregion
+
+
+}
+
+[SerializeField]
+public class Batch
+{
 
 }
