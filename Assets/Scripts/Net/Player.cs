@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class Player : NetworkBehaviour  {
 
@@ -16,10 +17,14 @@ public class Player : NetworkBehaviour  {
     public bool ReadyToRegistrate = false;
 
     [SyncVar] public bool isAlive = false;
-    [SyncVar] public bool isReady = false;
+    [SyncVar(hook = "OnIsReadyChanged")]
+    public bool isReady = false;
 
     [SyncVar]
     public Batch batch;
+
+    public GameManager gameManager;
+    public GameManager.UI ui;
 
     #region Initiative part
 
@@ -71,15 +76,56 @@ public class Player : NetworkBehaviour  {
 
     #region Playing
 
-    
+    // # START OF LOGIC
+    [Command] // server side
+    public void CmdSetReady()
+    {
+        isReady = true;
+        // next -- execution goes to isReady sync hook (method)
+
+        // still only server
+        gameManager.OnPlayerReady();
+    }
+    public void OnIsReadyChanged(bool ready) // client side
+    {
+        isReady = ready; 
+        ui.UpdPlayerList(gameManager.players);
+
+        Debug.Log("check for repeating action");
+    }
+
+    public void Perform()
+    {
+        Debug.Log("Performing: " + Nik);
+    }
+
+
+    // input part
+
+    private void Update()
+    {
+        if (!hasAuthority) return; // TODO another way?
+
+        // Temp
+        if (Input.GetKeyDown(KeyCode.R))
+            CmdSetReady();
+    }
+
 
     #endregion
 
 
 }
 
-[SerializeField]
-public class Batch
-{
 
+[SerializeField]
+public class Batch : IBatching
+{
+    public byte[] Serialized { get; set; }
 }
+interface IBatching
+{
+    byte[] Serialized { get; set; }
+}
+
+
