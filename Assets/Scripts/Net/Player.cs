@@ -27,10 +27,23 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     public Batch batch;
 
+
+    public bool performing = false;
+
+    public Action update;
+
+    public PlayerAvatar avatar;
+
+
     public GameManager gameManager;
     public GameManager.UI ui;
 
     #region Initiative part
+
+    private void Awake()
+    {
+        update = Update_Empty;
+    }
 
     void Registrate(bool ready)
     {
@@ -127,36 +140,91 @@ public class Player : NetworkBehaviour {
 
         if (batch != null)
             batch.Perform();
-        else Debug.Log("n");
     }
 
 
-    // input part
+    #region input
 
-    private void Update()
+    void Update()
     {
-        if (!hasAuthority) return; // TODO another way?
+        update();
+    }
 
-        // Temp
-        if (!isReady) // temp in if. TODO delegating for like state machine style
+    public void Update_Empty() { }
+    public void Update_Lobby()
+    {
+
+    }
+    public void Update_Game()
+    {
+        // todo check 'if' performance
+        if (Input.GetKeyDown(KeyCode.D))
+            foreach (var p in gameManager.players)
+                if (p.batch != null) Debug.Log(p.Nik 
+                    + " -- " + p.batch.PlayerOwnerNik);
+
+        if (!isReady) 
         {
             if (Input.GetKeyDown(KeyCode.R))
-                if (batch != null)
-                    CmdSetReady(batch.Serialized);
+            {
+                Debug.Log(batch.Serialized.Length);
+                CmdSetReady(batch.Serialized);
+            }
+            else
+            {
+                if (!isAlive)
+                {
+                    ListenMouseForSpawn();
+                }
                 else
-                    CmdSetReady(null); // TODO rewrite
-            else if (Input.GetKeyDown(KeyCode.S))
-                batch = new SpawnInfo() { point = new Vector3(0, 2, 30) };
-            else if (Input.GetKeyDown(KeyCode.A))
-                batch = new A() { msg = "message yo." };
-
-            if (Input.GetKeyDown(KeyCode.L)) {
-                Debug.Log("batch is null: " + (batch == null));
-                if(batch!=null) Debug.Log(batch.Serialized.Length);
+                    avatar.update();
+            }
+        }
+        else
+        {
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                Debug.Log(batch.Serialized.Length);
+                //batch = null;
+                //avatar.Cancel;// TODO
             }
         }
     }
 
+    void ListenMouseForSpawn()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            // TODO check for availabilty of spawn. Like near physical borders and other player spawns
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Floor")
+                SetSpawn(hit.point);
+        }
+    }
+    void SetSpawn(Vector3 spawnPos)
+    {
+        batch = new SpawnInfo() { Point = spawnPos, PlayerOwnerNik = Nik };
+
+        // yes, gettin mousePos from here is declining some universallity, but idc
+        ui.MarkSpawnPoint(Input.mousePosition);
+    }
+
+    #endregion
+
+
+    public void OnStartMatch ()
+    {
+
+    }
+
+
+    #endregion
+
+
+    #region UI
+    
 
     #endregion
 
@@ -167,7 +235,6 @@ public class Player : NetworkBehaviour {
 [Serializable]
 public class Batch
 {
-    
     public byte[] Serialized
     {
         get
@@ -180,25 +247,32 @@ public class Batch
         return Cmn.DeserializeBatch(barray);
     }
 
+    public string PlayerOwnerNik;
+
     // it was designed for abstract. But we can't use abst with u.networking
-    public virtual void Perform() { }
+    public virtual void Perform() {}
+
+
+    [SerializeField]
+    float x = 0, y = 0, z = 0;
+    public Vector3 Point
+    {
+        get { return new Vector3(x, y, z); }
+        set { x = value.x; y = value.y; z = value.z; }
+    }
 
 }
 
 [Serializable]
 public class SpawnInfo : Batch
 {
-    [SerializeField]
-    public float x=0, y=0, z=0;
-
-    public Vector3 point {
-        get { return new Vector3(x, y, z); }
-        set { x = value.x; y = value.y; z = value.z; }
-    }
-
     public override void Perform()
     {
-        Debug.Log("SpawnInfo: " + point);
+        Debug.Log("SpawnInfo: " + Point);
+
+        //GameManager.Spawn(Point, PlayerOwnerNik);
+        var gameManager = GameObject.Find("GameManager").GetComponent<GameManager>(); // TODO performance?
+        gameManager.Spawn(Point, PlayerOwnerNik);
     }
 }
 

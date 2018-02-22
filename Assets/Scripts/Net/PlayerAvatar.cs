@@ -13,8 +13,11 @@ public class PlayerAvatar : MonoBehaviour {
 
     public Turn turn = new Turn();
 
-    private void Update()
-    {
+    // cosmetic // TODO incapsule
+    //public Material 
+
+    public void update() // notice that there's lowercase 'u'
+    {               // bcse call goes from Player
         if (isTurning)
         {
             InputTurn();
@@ -131,7 +134,7 @@ public class PlayerAvatar : MonoBehaviour {
 }
 
 
-public class Turn
+public class Turn // TODO derivate batch
 {
     // private logic but 'public'
     public List<TurnAction> actions

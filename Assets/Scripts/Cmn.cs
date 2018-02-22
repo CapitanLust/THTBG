@@ -25,7 +25,18 @@ public static class Cmn {
         }
         return "";
     }
-
+    public static Color ToColor (this EPlayerColor pc)
+    {
+        switch (pc)
+        {
+            case EPlayerColor.Blue: return new Color(174, 221, 232);
+            case EPlayerColor.Red: return new Color(224, 123, 123);
+            case EPlayerColor.Gray: return new Color(191, 191, 191);
+            case EPlayerColor.Yellow: return new Color(237, 237, 97);
+            case EPlayerColor.Green: return new Color(97, 237, 116);
+        }
+        return Color.white;
+    }
     
     public static BinaryFormatter binaryFormatter = new BinaryFormatter();
 

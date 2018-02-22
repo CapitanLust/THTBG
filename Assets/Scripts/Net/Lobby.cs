@@ -14,6 +14,8 @@ public class Lobby : NetworkBehaviour {
     public LobbyUI ui;
 
 
+    public enum LobbyState { Lobby, Game }
+    public LobbyState State = LobbyState.Lobby; // TODO returning from game
 
     private void Awake()
     {
@@ -38,7 +40,16 @@ public class Lobby : NetworkBehaviour {
     public void AddPlayer(Player p)
     {
         players.Add(p);
-        ui.UpdateTxServerList();        
+
+        if (p.hasAuthority) p.update = p.Update_Lobby; // TODO migrate to Player.cs?
+
+        ui.UpdateTxServerList();  
+    }
+
+    public Player GetPlayerByNik(string nik)
+    {
+        foreach (var p in players) if (nik == p.Nik) return p;
+        return null;
     }
 
     
