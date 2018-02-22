@@ -23,8 +23,8 @@ public class Player : NetworkBehaviour {
 
     //[SyncVar (hook="SerializeBatch")]
     // sync changed to cmd-rpc logic
-    //public byte[] serializedBatch;
-    [SyncVar]
+    //[SyncVar(hook = "SerializeBatch")]
+    public byte[] serializedBatch;
     public Batch batch;
 
 
@@ -101,13 +101,8 @@ public class Player : NetworkBehaviour {
         // next -- execution goes to isReady sync hook (method)
 
         // sync batch 
-        this.batch = Batch.Deserialize(serializedBatch);
-        //this.serializedBatch = serializedBatch;
-        //RpcSyncBatch(serializedBatch);
-        // ahaha. Я тут возился с синхронизацией + сериализацией абстрактных классов
-        // а оказалось я изначально все делал правильно, но
-        // в методе десериализации стояло: return null
-        // -_- ...  :D
+        RpcSyncBatch(serializedBatch);
+        // а, нет. Это не было нормально. Все-таки нужно вручную синхр-ть
 
         // still only server
         gameManager.OnPlayerReady();
@@ -120,23 +115,26 @@ public class Player : NetworkBehaviour {
         Debug.Log("check for repeating action");
     }
     
-    /*
+    
     public void SerializeBatch(byte[] barray)
     {
+        batch = Batch.Deserialize(barray);
     }
+    
     [ClientRpc]
     public void RpcSyncBatch(byte[] barray)
     {
         //serializedBatch = barray;
-        Debug.Log("Batch is " + (batch!=null));
+        //Debug.Log("Batch is " + (batch!=null));
         batch = Batch.Deserialize(barray);
-        Debug.Log("Batch is " + (batch!=null));
+        //Debug.Log("Batch is " + (batch!=null));
         Debug.Log("rpc sync batch");
-    }*/
+    }
 
     public void Perform()
     {
         Debug.Log("Performing: " + Nik);
+        ui.tx_log.text += "Performing " + Nik + "\n";
 
         if (batch != null)
             batch.Perform();
@@ -177,7 +175,8 @@ public class Player : NetworkBehaviour {
                     ListenMouseForSpawn();
                 }
                 else
-                    avatar.update();
+                    if(avatar!=null) // check spawn delays
+                        avatar.update();
             }
         }
         else

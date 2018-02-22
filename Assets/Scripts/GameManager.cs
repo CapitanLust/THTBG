@@ -100,7 +100,7 @@ public class GameManager : NetworkBehaviour {
     // called on all clients
     public void Spawn(Vector3 spawnPos, string playerNik)
     {
-        var avatar = NetworkManager.Instantiate(avatarPrefab) as PlayerAvatar;
+        var avatar = Instantiate(avatarPrefab) as PlayerAvatar;
         var player = lobby.GetPlayerByNik(playerNik);
 
         player.avatar = avatar; // TODO change linking logic?
