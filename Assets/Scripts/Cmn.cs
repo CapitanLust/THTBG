@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
@@ -25,6 +26,30 @@ public static class Cmn {
         return "";
     }
 
+    
+    public static BinaryFormatter binaryFormatter = new BinaryFormatter();
 
+    public static byte[] SerializeBatch (Batch batch)
+    {
+        if (batch == null) return null;
+
+        using (var ms = new MemoryStream())
+        {
+            binaryFormatter.Serialize(ms, batch);
+            return ms.ToArray();
+        }
+    }
+    public static Batch DeserializeBatch (byte[] barray) 
+    {
+        if (barray == null) return null;
+
+        using(var ms = new MemoryStream(barray))
+        {
+            return binaryFormatter.Deserialize(ms) as Batch;
+        }
+
+        return null;
+    }
+    
 
 }
