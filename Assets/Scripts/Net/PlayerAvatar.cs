@@ -11,7 +11,7 @@ public class PlayerAvatar : MonoBehaviour {
     public bool isTurning = false,
                 isCommonTurning = false;
 
-    public Turn turn = new Turn();
+    //public Turn turn = new Turn();
 
     // cosmetic // TODO incapsule
     //public Material 
@@ -49,7 +49,7 @@ public class PlayerAvatar : MonoBehaviour {
 
         initialTurnPos = transform.position;
         distanceDelta = 0;
-        turn.Clear();
+        //turn.Clear();
 
         isCommonTurning = false;
         isTurning = true;
@@ -57,12 +57,12 @@ public class PlayerAvatar : MonoBehaviour {
 
     public void IterateTurn()
     {
-        if (turn.Iterate(this))
-        {
-            isCommonTurning = false;
+        //if (turn.Iterate())
+        //{
+            //isCommonTurning = false;
             //player.CmdSetReady();
-            Debug.Log("Ended");
-        }
+            //Debug.Log("Ended");
+        //}
     }
 
     public void ResetToInitial()
@@ -75,12 +75,9 @@ public class PlayerAvatar : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.B))
         {
             // last position ~confirmation~
-            turn.actions.Add(new Move() { point = transform.position });
+            //turn.actions.Add(new Move() { Point = transform.position });
 
             isTurning = false;
-            //player.isReady = true; // also calls hook
-            //player.gameManager.Ready("as");
-            //player.CmdSetReady(); // TODO !!! Cmd from hook. And just '=' there
 
             ResetToInitial();
 
@@ -90,11 +87,11 @@ public class PlayerAvatar : MonoBehaviour {
         }
         if (Input.GetKeyDown(KeyCode.C))
         {
-            ResetToInitial();
-            turn.Clear();
+            Cancel();
             return;
         }
 
+        /*
         Vector3 moveToward = new Vector3(
                 Input.GetAxis("Horizontal"),
                 0,
@@ -119,7 +116,14 @@ public class PlayerAvatar : MonoBehaviour {
         {
             turn.actions.Add(new Combat());
         }
+        */
 
+    }
+
+    public void Cancel()
+    {
+        ResetToInitial();
+        //turn.Clear();
     }
 
 
@@ -133,58 +137,26 @@ public class PlayerAvatar : MonoBehaviour {
 
 }
 
-
-public class Turn // TODO derivate batch
-{
-    // private logic but 'public'
-    public List<TurnAction> actions
-        = new List<TurnAction>();
-
-    public int actionsDid = 0;
-
-    public void Clear()
-    {
-        actions.Clear();
-    }
-
-    public bool Iterate(PlayerAvatar avatar) // TODO change linking logic there
-    {
-        if (actionsDid >= actions.Count) return true;
-
-        if (actions[actionsDid].Action(avatar))
-            actionsDid++;
-
-        //Iterate(avatar); ::: Forgot about upd physics
-        return false;
-    }
-}
-
-public abstract class TurnAction
-{
-    public Vector3 point;
-    //public float succesQuotient;
-
-    /// <returns> has action complete? </returns>
-    public abstract bool Action(PlayerAvatar avatar);
-}
-
 public class Move : TurnAction
 {
-    public override bool Action(PlayerAvatar avatar)
+    public override bool Action()
     {
-        Vector3 moveTo = point - avatar.transform.position;
-        avatar.Move(moveTo.normalized);
+        //Vector3 moveTo = point - avatar.transform.position;
+        //avatar.Move(moveTo.normalized);
 
-        return moveTo.magnitude <= 0.1f; // Or Epsilon?
+        //return moveTo.magnitude <= 0.1f; // Or Epsilon?
+        Debug.Log("wtfm");
+        return true;
     }
 }
 
 public class Combat : TurnAction
 {
-    public override bool Action(PlayerAvatar avatar)
+    public override bool Action()
     {
         // avatar.Weapon (field)
-        avatar.Combat(point);
+        //avatar.Combat(Point);
+        Debug.Log("wtfc");
         return true;
     }
 }

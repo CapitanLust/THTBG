@@ -40,23 +40,23 @@ public static class Cmn {
     
     public static BinaryFormatter binaryFormatter = new BinaryFormatter();
 
-    public static byte[] SerializeBatch (Batch batch)
+    public static byte[] SerializeTurn (Turn turn)
     {
-        if (batch == null) return null;
+        if (turn == null) return null;
 
         using (var ms = new MemoryStream())
         {
-            binaryFormatter.Serialize(ms, batch);
+            binaryFormatter.Serialize(ms, turn);
             return ms.ToArray();
         }
     }
-    public static Batch DeserializeBatch (byte[] barray) 
+    public static Turn DeserializeTurn (byte[] barray) 
     {
         if (barray == null) return null;
 
         using(var ms = new MemoryStream(barray))
         {
-            return binaryFormatter.Deserialize(ms) as Batch;
+            return binaryFormatter.Deserialize(ms) as Turn;
         }
 
         return null;

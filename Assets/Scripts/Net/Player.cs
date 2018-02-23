@@ -21,11 +21,7 @@ public class Player : NetworkBehaviour {
     [SyncVar(hook = "OnIsReadyChanged")]
     public bool isReady = false;
 
-    //[SyncVar (hook="SerializeBatch")]
-    // sync changed to cmd-rpc logic
-    //[SyncVar(hook = "SerializeBatch")]
-    public byte[] serializedBatch;
-    public Batch batch;
+    public Turn turn = new Turn();
 
 
     public bool performing = false;
@@ -95,13 +91,13 @@ public class Player : NetworkBehaviour {
 
     // # START OF LOGIC
     [Command] // server side
-    public void CmdSetReady(byte[] serializedBatch)
+    public void CmdSetReady(byte[] serializedTurn)
     {
         isReady = true;
         // next -- execution goes to isReady sync hook (method)
 
-        // sync batch 
-        RpcSyncBatch(serializedBatch);
+        // sync turn
+        RpcSyncTurn(serializedTurn);
         // а, нет. Это не было нормально. Все-таки нужно вручную синхр-ть
 
         // still only server
@@ -111,24 +107,19 @@ public class Player : NetworkBehaviour {
     {
         isReady = ready;
         ui.UpdPlayerList(gameManager.players);
-
-        Debug.Log("check for repeating action");
     }
     
-    
-    public void SerializeBatch(byte[] barray)
-    {
-        batch = Batch.Deserialize(barray);
-    }
     
     [ClientRpc]
-    public void RpcSyncBatch(byte[] barray)
+    public void RpcSyncTurn(byte[] barray)
     {
-        //serializedBatch = barray;
-        //Debug.Log("Batch is " + (batch!=null));
-        batch = Batch.Deserialize(barray);
-        //Debug.Log("Batch is " + (batch!=null));
-        Debug.Log("rpc sync batch");
+        turn = Turn.Deserialize(barray) as Turn;
+        turn.Owner = this; //       Important!  
+
+        //foreach (var ta in turn.actions) // hz
+        //ta.turn = turn;
+
+        Debug.Log("SynTurn " + Nik + ". turn is SI = " + (turn.actions[0] is SpawnInfo));
     }
 
     public void Perform()
@@ -136,8 +127,8 @@ public class Player : NetworkBehaviour {
         Debug.Log("Performing: " + Nik);
         ui.tx_log.text += "Performing " + Nik + "\n";
 
-        if (batch != null)
-            batch.Perform();
+        if (turn != null)
+            turn.Perform();
     }
 
 
@@ -156,17 +147,13 @@ public class Player : NetworkBehaviour {
     public void Update_Game()
     {
         // todo check 'if' performance
-        if (Input.GetKeyDown(KeyCode.D))
-            foreach (var p in gameManager.players)
-                if (p.batch != null) Debug.Log(p.Nik 
-                    + " -- " + p.batch.PlayerOwnerNik);
+        if (Input.GetKeyDown(KeyCode.D)) Debug.Log(turn == null); // reserved for debug
 
         if (!isReady) 
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
-                Debug.Log(batch.Serialized.Length);
-                CmdSetReady(batch.Serialized);
+                CmdSetReady(turn.Serialized);
             }
             else
             {
@@ -183,9 +170,8 @@ public class Player : NetworkBehaviour {
         {
             if (Input.GetKeyDown(KeyCode.C))
             {
-                Debug.Log(batch.Serialized.Length);
-                //batch = null;
-                //avatar.Cancel;// TODO
+                turn = null;
+                avatar.Cancel();
             }
         }
     }
@@ -204,7 +190,8 @@ public class Player : NetworkBehaviour {
     }
     void SetSpawn(Vector3 spawnPos)
     {
-        batch = new SpawnInfo() { Point = spawnPos, PlayerOwnerNik = Nik };
+        TurnAction spawnAct = new SpawnInfo() { Point = spawnPos , turn = turn };
+        turn.actions.Add(spawnAct);
 
         // yes, gettin mousePos from here is declining some universallity, but idc
         ui.MarkSpawnPoint(Input.mousePosition);
@@ -231,58 +218,16 @@ public class Player : NetworkBehaviour {
 }
 
 
-[Serializable]
-public class Batch
-{
-    public byte[] Serialized
-    {
-        get
-        {
-            return Cmn.SerializeBatch(this);
-        }
-    }
-    public static Batch Deserialize (byte[] barray)
-    {
-        return Cmn.DeserializeBatch(barray);
-    }
-
-    public string PlayerOwnerNik;
-
-    // it was designed for abstract. But we can't use abst with u.networking
-    public virtual void Perform() {}
-
-
-    [SerializeField]
-    float x = 0, y = 0, z = 0;
-    public Vector3 Point
-    {
-        get { return new Vector3(x, y, z); }
-        set { x = value.x; y = value.y; z = value.z; }
-    }
-
-}
 
 [Serializable]
-public class SpawnInfo : Batch
+public class SpawnInfo : TurnAction
 {
-    public override void Perform()
+    public override bool Action()
     {
         Debug.Log("SpawnInfo: " + Point);
 
-        //GameManager.Spawn(Point, PlayerOwnerNik);
-        var gameManager = GameObject.Find("GameManager").GetComponent<GameManager>(); // TODO performance?
-        gameManager.Spawn(Point, PlayerOwnerNik);
-    }
-}
+        turn.Owner.gameManager.Spawn(Point, turn.Owner);
 
-[Serializable]
-public class A : Batch
-{
-    [SerializeField]
-    public string msg;
-
-    public override void Perform()
-    {
-        Debug.Log("A: " + msg);
+        return true; // TODO or GameManager.Spawn -> bool ?
     }
 }

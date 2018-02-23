@@ -76,9 +76,13 @@ public class GameManager : NetworkBehaviour {
     void ResetReady()
     {
         readyPlayers = 0;
-        // auto-sync? it does on server, isn't it autosync there?
-        // think it will, but didn't try yet
-        foreach (var p in players) p.isReady = false;
+
+        foreach (var p in players)
+        {
+            p.isReady = false;
+            //p.turn = null; // TODO or p.ClearTurn()?
+            //p.turn.Clear();
+        }
     }
 
 
@@ -98,10 +102,9 @@ public class GameManager : NetworkBehaviour {
 
 
     // called on all clients
-    public void Spawn(Vector3 spawnPos, string playerNik)
+    public void Spawn(Vector3 spawnPos, Player player)
     {
         var avatar = Instantiate(avatarPrefab) as PlayerAvatar;
-        var player = lobby.GetPlayerByNik(playerNik);
 
         player.avatar = avatar; // TODO change linking logic?
         avatar.player = player; // or is it quite enough?
@@ -114,9 +117,8 @@ public class GameManager : NetworkBehaviour {
         // TODO apply settings
         var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
         renderer.materials[0].color = player.Color.ToColor();
-        Debug.Log(player.Color.ToColor());
 
-        if (player.hasAuthority) ui.ClearSpawnPoint();
+        if (player.hasAuthority) ui.ClearSpawnPoint(); //TODO point to common ui points per turns
     }
 
 
