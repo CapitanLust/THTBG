@@ -29,11 +29,11 @@ public static class Cmn {
     {
         switch (pc)
         {
-            case EPlayerColor.Blue: return new Color(174, 221, 232);
-            case EPlayerColor.Red: return new Color(224, 123, 123);
-            case EPlayerColor.Gray: return new Color(191, 191, 191);
-            case EPlayerColor.Yellow: return new Color(237, 237, 97);
-            case EPlayerColor.Green: return new Color(97, 237, 116);
+            case EPlayerColor.Blue: return new Color(0.68f, 0.87f, 0.9f);
+            case EPlayerColor.Red: return new Color(0.93f, 0.345f, 0.46f);
+            case EPlayerColor.Gray: return new Color(.7f, .7f, .7f);
+            case EPlayerColor.Yellow: return new Color(.91f, .93f, .345f);
+            case EPlayerColor.Green: return new Color(.345f, .93f, .63f);
         }
         return Color.white;
     }

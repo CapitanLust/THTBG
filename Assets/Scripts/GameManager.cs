@@ -112,11 +112,9 @@ public class GameManager : NetworkBehaviour {
         player.isAlive = true;
 
         // TODO apply settings
-        var meshRenderer = avatar.transform.GetChild(0).GetComponent<MeshRenderer>();
-        var mat = meshRenderer.material; // copy
-        mat.color = player.Color.ToColor();
-        meshRenderer.material = mat;
-
+        var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
+        renderer.materials[0].color = player.Color.ToColor();
+        Debug.Log(player.Color.ToColor());
 
         if (player.hasAuthority) ui.ClearSpawnPoint();
     }
