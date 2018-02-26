@@ -49,14 +49,10 @@ public class Turn
 
     public void Perform()
     {
-        Debug.Log("a");
-        if (Iterate() || actionsDid >= actions.Count)
-        {
-          //Clear();  // /\ second check because of -- if we complete it for 1 step.
-                      // ( solution designed for performing through Update and frame-logic )
-            Debug.Log("b");
-            Owner.CmdSetReady();
-        }
+        //if (Iterate() || actionsDid >= actions.Count)
+                      // /\ second check because of -- if we complete it for 1 step.
+                     // ( solution designed for performing through Update and frame-logic )
+            //Owner.CmdSetReady();
     }
 
     public void Clear()
@@ -71,11 +67,7 @@ public class Turn
         if (actionsDid >= actions.Count) return true;
 
         if (actions[actionsDid].Action())
-        {
             actionsDid++;
-            Debug.Log("c");
-        }
-        Debug.Log("d");
 
         return false;
     }
@@ -118,6 +110,12 @@ public abstract class TurnAction
 
     /// <returns> has action complete? </returns>
     public abstract bool Action();
+
+    /// <summary>
+    /// Uses for reapply NonSync unique fields after sync
+    /// (like avatar, etc)
+    /// </summary>
+    public abstract void SyncNonSync(Turn turn);
 
 }
 

@@ -18,14 +18,7 @@ public class PlayerAvatar : MonoBehaviour {
 
     public void update() // notice that there's lowercase 'u'
     {               // bcse call goes from Player
-        if (isTurning)
-        {
-            InputTurn();
-        }
-        else if (isCommonTurning)
-        {
-            IterateTurn();
-        }
+        IterateTurn();
     }
 
     public void Move (Vector3 toward)
@@ -57,11 +50,11 @@ public class PlayerAvatar : MonoBehaviour {
 
     public void IterateTurn()
     {
-        //if (turn.Iterate())
+        //if (player.turn.Iterate())
         //{
-            //isCommonTurning = false;
-            //player.CmdSetReady();
-            //Debug.Log("Ended");
+        //    //isCommonTurning = false;
+        //    player.CmdSetReady();
+        //    Debug.Log("Ended");
         //}
     }
 
@@ -69,56 +62,7 @@ public class PlayerAvatar : MonoBehaviour {
     {
         transform.position = initialTurnPos;
     }
-
-    public void InputTurn ()
-    {
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            // last position ~confirmation~
-            //turn.actions.Add(new Move() { Point = transform.position });
-
-            isTurning = false;
-
-            ResetToInitial();
-
-            //isCommonTurning = true;
-
-            return;
-        }
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            Cancel();
-            return;
-        }
-
-        /*
-        Vector3 moveToward = new Vector3(
-                Input.GetAxis("Horizontal"),
-                0,
-                Input.GetAxis("Vertical")
-            );
-        if( moveToward.magnitude > float.Epsilon)
-        {
-            Move(moveToward);
-
-            if (distanceDelta < 0.2f) { distanceDelta += moveToward.magnitude*speed; } // TODO *speed?
-            else
-            {
-                turn.actions.Add( new Move() { point = transform.position } );
-                distanceDelta = 0;
-
-                Debug.Log("added move");
-            }
-            return;
-        }
-
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            turn.actions.Add(new Combat());
-        }
-        */
-
-    }
+    
 
     public void Cancel()
     {
@@ -133,7 +77,12 @@ public class PlayerAvatar : MonoBehaviour {
         isCommonTurning = true;
     }
 
-
+    public void ReturnToInitialTurnState()
+    {
+        Debug.Log("asd" + player.turn.actions[0].Point);
+        //transform.position = initialTurnPos;
+        transform.position = player.turn.actions[0].Point; // definitely MoveAct. Def-ly with init pos
+    }
 
 }
 
@@ -150,6 +99,8 @@ public class MoveAction : TurnAction
     {
         this.turn = turn;
         avatar = turn.Owner.avatar;
+
+        Point = avatar.transform.position;
     }
 
     public override void InputHandler()
@@ -170,14 +121,16 @@ public class MoveAction : TurnAction
                 //turn.actions.Add(new Move() { point = transform.position });
 
                 // Dump moveAct, add new one and relink inpHandler
-                Point = avatar.transform.position;
+                //Point = avatar.transform.position;
                 turn.actions.Add(new MoveAction(turn));
-                turn.Owner.inputHandler = turn.actions[0].InputHandler;
+                turn.Owner.inputHandler = turn.actions[turn.actions.Count-1].InputHandler;
 
                 Debug.Log("added move");
             }
             return;
         }
+
+
 
         // if input type changed, switch to new action TODO
     }
@@ -190,6 +143,13 @@ public class MoveAction : TurnAction
 
         return moveTo.magnitude <= 0.1f; // Or Epsilon?
     }
+
+    public override void SyncNonSync(Turn turn)
+    {
+        this.turn = turn;
+        avatar = turn.Owner.avatar;
+    }
+
 }
 
 /*

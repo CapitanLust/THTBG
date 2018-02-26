@@ -132,6 +132,15 @@ public class Player : NetworkBehaviour {
         turn = Turn.Deserialize(barray) as Turn;
         turn.Owner = this; //       Important!  
 
+        foreach (var ta in turn.actions)
+            ta.SyncNonSync(turn);
+
+    }
+
+    public void ReturnToInitialTurnState()
+    {
+        if(isAlive)
+            avatar.ReturnToInitialTurnState();
     }
 
     public void Perform()
@@ -182,8 +191,8 @@ public class Player : NetworkBehaviour {
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
-                CmdSyncTurn(turn.Serialized);
                 CmdSetReady();
+                CmdSyncTurn(turn.Serialized);
             }
             else
             {
@@ -211,7 +220,11 @@ public class Player : NetworkBehaviour {
     }
     public void Update_Game_Performance()
     {
-        
+        if (turn.Iterate())
+        {
+            CmdSetReady();
+            Debug.Log("Ended");
+        }
     }
 
 
@@ -292,4 +305,9 @@ public class SpawnAction : TurnAction
 
         return true; // TODO or GameManager.Spawn -> bool ?
     }
+
+    public override void SyncNonSync(Turn turn)
+    {
+    }
+
 }

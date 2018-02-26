@@ -118,7 +118,10 @@ public class GameManager : NetworkBehaviour {
     public void RpcPerform() // on each client
     {
         foreach (var p in players)
+        {
+            p.ReturnToInitialTurnState();
             p.Perform();
+        }
     }
     [ClientRpc]
     public void RpcStartDecision() // on each client
