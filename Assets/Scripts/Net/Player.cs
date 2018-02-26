@@ -26,7 +26,9 @@ public class Player : NetworkBehaviour {
 
     public bool performing = false;
 
-    public Action update;
+    public Action update;       
+    public Action inputHandler 
+        = () => { };
 
     public PlayerAvatar avatar;
 
@@ -39,6 +41,7 @@ public class Player : NetworkBehaviour {
     private void Awake()
     {
         update = Update_Empty;
+        turn.Owner = this;
     }
 
     void Registrate(bool ready)
@@ -90,23 +93,36 @@ public class Player : NetworkBehaviour {
     #region Playing
 
     // # START OF LOGIC
-    [Command] // server side
+    /// <summary>
+    /// that one -- is ready call from decision
+    /// </summary>
+    /// <param name="serializedTurn"></param>
+    /*[Command] // server side
     public void CmdSetReady(byte[] serializedTurn)
     {
         isReady = true;
         // next -- execution goes to isReady sync hook (method)
-
-        // sync turn
         RpcSyncTurn(serializedTurn);
-        // а, нет. Это не было нормально. Все-таки нужно вручную синхр-ть
-
         // still only server
+        gameManager.OnPlayerReady();
+    }*/
+
+    [Command] // server side
+    public void CmdSetReady()
+    {
+        isReady = true;
         gameManager.OnPlayerReady();
     }
     public void OnIsReadyChanged(bool ready) // client side
     {
         isReady = ready;
         ui.UpdPlayerList(gameManager.players);
+    }
+
+    [Command]
+    public void CmdSyncTurn(byte[] serializedTurn)
+    {
+        RpcSyncTurn(serializedTurn);
     }
     
     
@@ -116,10 +132,6 @@ public class Player : NetworkBehaviour {
         turn = Turn.Deserialize(barray) as Turn;
         turn.Owner = this; //       Important!  
 
-        //foreach (var ta in turn.actions) // hz
-        //ta.turn = turn;
-
-        Debug.Log("SynTurn " + Nik + ". turn is SI = " + (turn.actions[0] is SpawnInfo));
     }
 
     public void Perform()
@@ -127,8 +139,26 @@ public class Player : NetworkBehaviour {
         Debug.Log("Performing: " + Nik);
         ui.tx_log.text += "Performing " + Nik + "\n";
 
-        if (turn != null)
-            turn.Perform();
+        update = Update_Game_Performance;
+
+        turn.Perform();
+    }
+
+    public void StartDecision()
+    {
+        if(turn.actions.Count>0)
+        Debug.Log(turn.actions[0].Point);
+        turn.Clear();
+
+        if (isAlive)
+            turn.actions.Add(new MoveAction(turn));
+        else       // TODO + ruler
+            turn.actions.Add(new SpawnAction(turn));
+        inputHandler = turn.actions[0].InputHandler;
+
+        update = Update_Game_Decision;
+
+        Debug.Log(turn.actions[0].Point);
     }
 
 
@@ -144,38 +174,48 @@ public class Player : NetworkBehaviour {
     {
 
     }
-    public void Update_Game()
+    public void Update_Game_Decision()
     {
-        // todo check 'if' performance
-        if (Input.GetKeyDown(KeyCode.D)) Debug.Log(turn == null); // reserved for debug
+        if (Input.GetKeyDown(KeyCode.K)) Debug.Log(""); // reserved for debug
 
         if (!isReady) 
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
-                CmdSetReady(turn.Serialized);
+                CmdSyncTurn(turn.Serialized);
+                CmdSetReady();
             }
             else
             {
-                if (!isAlive)
+                inputHandler();
+
+                /*if (!isAlive)
                 {
                     ListenMouseForSpawn();
                 }
                 else
                     if(avatar!=null) // check spawn delays
                         avatar.update();
+                        */
             }
         }
         else
         {
             if (Input.GetKeyDown(KeyCode.C))
             {
-                turn = null;
-                avatar.Cancel();
+                //turn = null;
+                //turn.Clear();                                       ////////TODO///////////
+                //avatar.Cancel();
             }
         }
     }
+    public void Update_Game_Performance()
+    {
+        
+    }
 
+
+    /*
     void ListenMouseForSpawn()
     {
         if (Input.GetMouseButtonDown(0))
@@ -188,14 +228,15 @@ public class Player : NetworkBehaviour {
                 SetSpawn(hit.point);
         }
     }
-    void SetSpawn(Vector3 spawnPos)
+
+    public void SetSpawn(Vector3 spawnPos)
     {
-        TurnAction spawnAct = new SpawnInfo() { Point = spawnPos , turn = turn };
+        TurnAction spawnAct = new SpawnAction() { Point = spawnPos , turn = turn };
         turn.actions.Add(spawnAct);
 
         // yes, gettin mousePos from here is declining some universallity, but idc
         ui.MarkSpawnPoint(Input.mousePosition);
-    }
+    }*/
 
     #endregion
 
@@ -220,8 +261,29 @@ public class Player : NetworkBehaviour {
 
 
 [Serializable]
-public class SpawnInfo : TurnAction
+public class SpawnAction : TurnAction
 {
+    public SpawnAction (Turn turn) { this.turn = turn; }
+
+    public override void InputHandler()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            // TODO check for availabilty of spawn. Like near physical borders and other player spawns
+            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hit;
+
+            if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Floor")
+            {
+                //turn.Owner.SetSpawn(hit.point);
+
+                Point = hit.point;
+
+                turn.Owner.ui.MarkSpawnPoint(Input.mousePosition);
+            }
+        }
+    }
+
     public override bool Action()
     {
         Debug.Log("SpawnInfo: " + Point);

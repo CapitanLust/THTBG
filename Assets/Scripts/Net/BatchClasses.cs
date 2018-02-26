@@ -49,15 +49,21 @@ public class Turn
 
     public void Perform()
     {
-        if (Iterate() || actionsDid >= actions.Count) 
-            Clear();  // /\ second check because of -- if we complete it for 1 step.
-                     // ( solution designed for performing through Update and frame-logic )
+        Debug.Log("a");
+        if (Iterate() || actionsDid >= actions.Count)
+        {
+          //Clear();  // /\ second check because of -- if we complete it for 1 step.
+                      // ( solution designed for performing through Update and frame-logic )
+            Debug.Log("b");
+            Owner.CmdSetReady();
+        }
     }
 
     public void Clear()
     {
         actions.Clear();
         actionsDid = 0; // TODO ?
+
     }
 
     public bool Iterate()
@@ -65,7 +71,11 @@ public class Turn
         if (actionsDid >= actions.Count) return true;
 
         if (actions[actionsDid].Action())
+        {
             actionsDid++;
+            Debug.Log("c");
+        }
+        Debug.Log("d");
 
         return false;
     }
@@ -95,7 +105,6 @@ public abstract class TurnAction
 {
     public Turn turn;
 
-    [SerializeField]
     float x = 0, y = 0, z = 0;
     public Vector3 Point
     {
@@ -105,8 +114,11 @@ public abstract class TurnAction
 
     public float SuccesQuotient;
 
+    public abstract void InputHandler();
+
     /// <returns> has action complete? </returns>
     public abstract bool Action();
+
 }
 
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -41,14 +41,14 @@ public class PlayerAvatar : MonoBehaviour {
 
     // User Part
 
-    float distanceDelta = 0;
+    //float distanceDelta = 0;
     Vector3 initialTurnPos;
     
     public void StartTurning()
     {
 
         initialTurnPos = transform.position;
-        distanceDelta = 0;
+        //distanceDelta = 0;
         //turn.Clear();
 
         isCommonTurning = false;
@@ -137,19 +137,62 @@ public class PlayerAvatar : MonoBehaviour {
 
 }
 
-public class Move : TurnAction
+[Serializable]
+public class MoveAction : TurnAction
 {
+    [NonSerialized]
+    // for not long way to avatar (thru turn.Owner.av..)
+    PlayerAvatar avatar;
+    [NonSerialized]
+    float distanceDelta = 0;
+
+    public MoveAction(Turn turn)
+    {
+        this.turn = turn;
+        avatar = turn.Owner.avatar;
+    }
+
+    public override void InputHandler()
+    {
+        Vector3 moveToward = new Vector3(
+                Input.GetAxis("Horizontal"),
+                0,
+                Input.GetAxis("Vertical"));
+
+        if (moveToward.magnitude > float.Epsilon)
+        {
+            avatar.Move(moveToward);
+
+            if (distanceDelta < 0.2f) 
+                distanceDelta += moveToward.magnitude * avatar.speed; 
+            else
+            {
+                //turn.actions.Add(new Move() { point = transform.position });
+
+                // Dump moveAct, add new one and relink inpHandler
+                Point = avatar.transform.position;
+                turn.actions.Add(new MoveAction(turn));
+                turn.Owner.inputHandler = turn.actions[0].InputHandler;
+
+                Debug.Log("added move");
+            }
+            return;
+        }
+
+        // if input type changed, switch to new action TODO
+    }
+
     public override bool Action()
     {
-        //Vector3 moveTo = point - avatar.transform.position;
-        //avatar.Move(moveTo.normalized);
+        Vector3 moveTo =
+            Point - avatar.transform.position;
+        avatar.Move(moveTo.normalized);
 
-        //return moveTo.magnitude <= 0.1f; // Or Epsilon?
-        Debug.Log("wtfm");
-        return true;
+        return moveTo.magnitude <= 0.1f; // Or Epsilon?
     }
 }
 
+/*
 public class Combat : TurnAction
 {
     public override bool Action()
@@ -160,3 +203,4 @@ public class Combat : TurnAction
         return true;
     }
 }
+*/

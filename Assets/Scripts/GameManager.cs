@@ -19,6 +19,7 @@ public class GameManager : NetworkBehaviour {
     public NetworkManager networkManager;
 
     public List<Player> players;
+    public Player WePlayer; // TODO rename
 
     public bool isMatchStarted = false;
 
@@ -52,14 +53,23 @@ public class GameManager : NetworkBehaviour {
         //unreadyPlayers = players.Count;
         foreach (var p in players)
         {
-            // TODO to method
             p.gameManager = this; // TODO call to start
             p.ui = ui;
 
-            if (p.hasAuthority) p.update = p.Update_Game; 
+            //if (p.hasAuthority) p.update = p.Update_Game_Decision; 
+
+            if (p.hasAuthority)
+            {
+                WePlayer = p;
+                //p.StartDecision();
+            }
         }
 
+        ResetReady();
+
         ui.UpdPlayerList(players);
+
+        WePlayer.StartDecision();
     }
     #endregion
 
@@ -69,8 +79,8 @@ public class GameManager : NetworkBehaviour {
     {
         if ((++readyPlayers) == players.Count)
         {
-            onEachPlayerReady();
             ResetReady();
+            onEachPlayerReady();
         }
     }
     void ResetReady()
@@ -80,21 +90,42 @@ public class GameManager : NetworkBehaviour {
         foreach (var p in players)
         {
             p.isReady = false;
-            //p.turn = null; // TODO or p.ClearTurn()?
-            //p.turn.Clear();
+
+            /* Moved to Player.StartDecision
+            p.turn.Clear();
+            if (p.isAlive) 
+                p.turn.actions.Add(new MoveAction(p.turn));
+            else       // TODO + ruler
+                p.turn.actions.Add(new SpawnAction(p.turn));
+            p.inputHandler = p.turn.actions[0].InputHandler;*/
         }
     }
 
 
     void OnEachReady_Decision() // still server side
     {
+        onEachPlayerReady = OnEachReady_Performance;
         RpcPerform();
+        //TODO process turns (kills, etc)
     }
+    void OnEachReady_Performance()
+    {
+        RpcStartDecision();
+        onEachPlayerReady = OnEachReady_Decision;
+    }
+
     [ClientRpc]
     public void RpcPerform() // on each client
     {
         foreach (var p in players)
             p.Perform();
+    }
+    [ClientRpc]
+    public void RpcStartDecision() // on each client
+    {
+        //foreach (var p in players)
+            //p.StartDecision();
+        WePlayer.StartDecision(); // only authority player
     }
 
 
