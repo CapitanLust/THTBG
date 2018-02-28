@@ -93,20 +93,11 @@ public class Player : NetworkBehaviour {
     #region Playing
 
     // # START OF LOGIC
+
     /// <summary>
-    /// that one -- is ready call from decision
+    /// that one -- is ready-call from decision
     /// </summary>
     /// <param name="serializedTurn"></param>
-    /*[Command] // server side
-    public void CmdSetReady(byte[] serializedTurn)
-    {
-        isReady = true;
-        // next -- execution goes to isReady sync hook (method)
-        RpcSyncTurn(serializedTurn);
-        // still only server
-        gameManager.OnPlayerReady();
-    }*/
-
     [Command] // server side
     public void CmdSetReady()
     {
@@ -149,8 +140,6 @@ public class Player : NetworkBehaviour {
         ui.tx_log.text += "Performing " + Nik + "\n";
 
         update = Update_Game_Performance;
-
-        //turn.Perform();
     }
 
     public void StartDecision()
@@ -240,29 +229,6 @@ public class Player : NetworkBehaviour {
     }
 
 
-    /*
-    void ListenMouseForSpawn()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            // TODO check for availabilty of spawn. Like near physical borders and other player spawns
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Floor")
-                SetSpawn(hit.point);
-        }
-    }
-
-    public void SetSpawn(Vector3 spawnPos)
-    {
-        TurnAction spawnAct = new SpawnAction() { Point = spawnPos , turn = turn };
-        turn.actions.Add(spawnAct);
-
-        // yes, gettin mousePos from here is declining some universallity, but idc
-        ui.MarkSpawnPoint(Input.mousePosition);
-    }*/
-
     #endregion
 
 
@@ -300,8 +266,6 @@ public class SpawnAction : TurnAction
 
             if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Floor")
             {
-                //turn.Owner.SetSpawn(hit.point);
-
                 Point = hit.point;
 
                 turn.Owner.ui.MarkSpawnPoint(Input.mousePosition);

@@ -37,7 +37,6 @@ public class GameManager : NetworkBehaviour {
     {
         lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
         networkManager = lobby.netManager;
-        //players = lobby.players;
 
         onEachPlayerReady = OnEachReady_Decision;
 
@@ -50,19 +49,13 @@ public class GameManager : NetworkBehaviour {
 
         // TODO is it Ready and synced already?
         players = lobby.players;
-        //unreadyPlayers = players.Count;
         foreach (var p in players)
         {
             p.gameManager = this; // TODO call to start
             p.ui = ui;
 
-            //if (p.hasAuthority) p.update = p.Update_Game_Decision; 
-
             if (p.hasAuthority)
-            {
                 WePlayer = p;
-                //p.StartDecision();
-            }
         }
 
         ResetReady();
@@ -83,6 +76,7 @@ public class GameManager : NetworkBehaviour {
                 onEachPlayerReady();
             }));
         // delay for await of turn sync
+        // TODO comment /\
     }
     
     void ResetReady()
@@ -115,15 +109,10 @@ public class GameManager : NetworkBehaviour {
     [ClientRpc]
     public void RpcStartDecision() // on each client
     {
-        //foreach (var p in players)
-        //p.StartDecision();
-        //WePlayer.StartDecision(); // only authority player
 
         foreach (var p in players)
             p.StartDecision();
 
-        // we need to re set update handler on player.
-        // and has he authority or not will be figured in StartDecis-n
     }
 
 
@@ -138,7 +127,6 @@ public class GameManager : NetworkBehaviour {
         player.avatar = avatar; // TODO change linking logic?
         avatar.player = player; // or is it quite enough?
 
-        //avatar.transform.SetParent(player.transform);
         avatar.transform.position = spawnPos + new Vector3(0,0.6f,0); // TODO do high offset in prefab
 
         player.isAlive = true;

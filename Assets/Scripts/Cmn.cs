@@ -63,7 +63,7 @@ public static class Cmn {
     }
 
     /// <summary>
-    /// Awaits for some seconds and execute next()
+    /// Awaits for some seconds and execute(s?) next()
     /// </summary>
     /// <param name="next">Action that will been executed </param>
     /// <param name="awaitFor">Time to await</param>
