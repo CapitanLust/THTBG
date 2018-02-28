@@ -254,11 +254,19 @@ public class Player : NetworkBehaviour {
 [Serializable]
 public class SpawnAction : TurnAction
 {
-    public SpawnAction (Turn turn) { this.turn = turn; }
+    bool setted = false;
+
+    public SpawnAction (Turn turn)
+    {
+        this.turn = turn;
+
+        turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
+        turn.Owner.ui.SetActiveOfFloorCursor(true);
+    }
 
     public override void InputHandler()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (!setted)
         {
             // TODO check for availabilty of spawn. Like near physical borders and other player spawns
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -266,9 +274,23 @@ public class SpawnAction : TurnAction
 
             if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Floor")
             {
-                Point = hit.point;
+                turn.Owner.ui.SetFloorCursor(hit.point);
 
-                turn.Owner.ui.MarkSpawnPoint(Input.mousePosition);
+                if (Input.GetMouseButtonDown(0))
+                {
+                    setted = true;
+                    Point = hit.point;
+
+                    turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Setted);
+                }
+            }
+        }
+        else
+        {
+            if (Input.GetMouseButtonDown(1))
+            {
+                setted = false;
+                turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
             }
         }
     }
@@ -278,6 +300,8 @@ public class SpawnAction : TurnAction
         Debug.Log("SpawnInfo: " + Point);
 
         turn.Owner.gameManager.Spawn(Point, turn.Owner);
+
+        turn.Owner.gameManager.ui.SetActiveOfFloorCursor(false);
 
         return true; // TODO or GameManager.Spawn -> bool ?
     }

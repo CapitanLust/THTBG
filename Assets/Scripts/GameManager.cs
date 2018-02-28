@@ -127,7 +127,7 @@ public class GameManager : NetworkBehaviour {
         player.avatar = avatar; // TODO change linking logic?
         avatar.player = player; // or is it quite enough?
 
-        avatar.transform.position = spawnPos + new Vector3(0,0.6f,0); // TODO do high offset in prefab
+        avatar.transform.position = spawnPos;
 
         player.isAlive = true;
 
@@ -135,7 +135,7 @@ public class GameManager : NetworkBehaviour {
         var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
         renderer.materials[0].color = player.Color.ToColor();
 
-        if (player.hasAuthority) ui.ClearSpawnPoint(); //TODO point to common ui points per turns
+        //if (player.hasAuthority) ui.ClearSpawnPoint(); //TODO point to common ui points per turns
     }
 
 
@@ -145,6 +145,21 @@ public class GameManager : NetworkBehaviour {
         public Text tx_log, tx_playerList;
         public RawImage img_SpawnPoint;
 
+        public SpriteRenderer FloorCursor;
+
+        public FloorCursorColors floorCursorColors;
+        [Serializable]
+        public struct FloorCursorColors
+        {
+            /// <summary> Color of sprite-cursor on the floor,
+            /// that appear when we're deciding point </summary>
+            public Color Decision;
+            /// <summary> Color of sprite-cursor when we've select and we are ready </summary>
+            public Color Setted;
+            /// <summary> Color of sprite-cursor when we've point to place where we can't do Action </summary>
+            public Color Unavailable;
+        }
+
         public void UpdPlayerList(List<Player> list)
         {
             tx_playerList.text = "";
@@ -153,17 +168,40 @@ public class GameManager : NetworkBehaviour {
                 tx_playerList.text += p.Nik + " ["
                     + (p.isReady ? "R]\n" : "  ]\n");
         }
-
-
+        
+        [Obsolete("Use FloorCursor instead", true)]
         public void MarkSpawnPoint(Vector2 pos)
         {
             img_SpawnPoint.rectTransform.position = pos;
             img_SpawnPoint.gameObject.SetActive(true);
         }
+        [Obsolete("Use FloorCursor instead", true)]
         public void ClearSpawnPoint()
         {
             img_SpawnPoint.gameObject.SetActive(false);
         }
+
+
+        public void SetFloorCursor (Vector3 pointOnFloor)
+        {
+            FloorCursor.transform.position = pointOnFloor
+                + new Vector3(0,0.01f,0);
+            // TODO rotation and apply Cursor of certain Equipment
+        }
+        public void SetActiveOfFloorCursor(bool active)
+        {
+            FloorCursor.gameObject.SetActive(active);
+        }
+        public void SetFloorCursorState(FloorCursorState state)
+        {
+            switch (state)
+            {
+                case FloorCursorState.Deciding: FloorCursor.color = floorCursorColors.Decision; break;
+                case FloorCursorState.Setted: FloorCursor.color = floorCursorColors.Setted; break;
+                case FloorCursorState.Unavailable: FloorCursor.color = floorCursorColors.Unavailable; break;
+            }
+        }
+        public enum FloorCursorState { Deciding, Setted, Unavailable };
 
     }
 

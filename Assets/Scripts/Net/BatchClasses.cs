@@ -107,6 +107,12 @@ public abstract class TurnAction
 
     public float SuccesQuotient;
 
+    [NonSerialized]
+    public float Radius;
+
+    // TODO have own FloorCursor
+
+
     public abstract void InputHandler();
 
     /// <returns> has action complete? </returns>
