@@ -95,6 +95,7 @@ public class Turn
 [Serializable]
 public abstract class TurnAction
 {
+    [NonSerialized]
     public Turn turn;
 
     float x = 0, y = 0, z = 0;

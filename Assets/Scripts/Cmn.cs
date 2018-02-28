@@ -61,6 +61,16 @@ public static class Cmn {
 
         return null;
     }
-    
+
+    /// <summary>
+    /// Awaits for some seconds and execute next()
+    /// </summary>
+    /// <param name="next">Action that will been executed </param>
+    /// <param name="awaitFor">Time to await</param>
+    public static IEnumerator AwaitAnd(Action next, float awaitFor = .2f)
+    {
+        yield return new WaitForSeconds(awaitFor);
+        next();
+    }
 
 }

@@ -75,30 +75,22 @@ public class GameManager : NetworkBehaviour {
 
     #region Playing
 
-    public void OnPlayerReady()
+    public void OnPlayerReady() // only on server
     {
         if ((++readyPlayers) == players.Count)
-        {
-            ResetReady();
-            onEachPlayerReady();
-        }
+            StartCoroutine( Cmn.AwaitAnd(() => {
+                ResetReady();
+                onEachPlayerReady();
+            }));
+        // delay for await of turn sync
     }
+    
     void ResetReady()
     {
         readyPlayers = 0;
 
         foreach (var p in players)
-        {
             p.isReady = false;
-
-            /* Moved to Player.StartDecision
-            p.turn.Clear();
-            if (p.isAlive) 
-                p.turn.actions.Add(new MoveAction(p.turn));
-            else       // TODO + ruler
-                p.turn.actions.Add(new SpawnAction(p.turn));
-            p.inputHandler = p.turn.actions[0].InputHandler;*/
-        }
     }
 
 
@@ -118,17 +110,20 @@ public class GameManager : NetworkBehaviour {
     public void RpcPerform() // on each client
     {
         foreach (var p in players)
-        {
-            p.ReturnToInitialTurnState();
             p.Perform();
-        }
     }
     [ClientRpc]
     public void RpcStartDecision() // on each client
     {
         //foreach (var p in players)
-            //p.StartDecision();
-        WePlayer.StartDecision(); // only authority player
+        //p.StartDecision();
+        //WePlayer.StartDecision(); // only authority player
+
+        foreach (var p in players)
+            p.StartDecision();
+
+        // we need to re set update handler on player.
+        // and has he authority or not will be figured in StartDecis-n
     }
 
 

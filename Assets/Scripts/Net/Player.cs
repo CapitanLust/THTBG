@@ -150,24 +150,26 @@ public class Player : NetworkBehaviour {
 
         update = Update_Game_Performance;
 
-        turn.Perform();
+        //turn.Perform();
     }
 
     public void StartDecision()
     {
-        if(turn.actions.Count>0)
-        Debug.Log(turn.actions[0].Point);
-        turn.Clear();
+        turn.Clear(); // don't need on non-auth, but let it be just in case
 
-        if (isAlive)
-            turn.actions.Add(new MoveAction(turn));
-        else       // TODO + ruler
-            turn.actions.Add(new SpawnAction(turn));
-        inputHandler = turn.actions[0].InputHandler;
+        if (hasAuthority)
+        {
+            if (isAlive)
+                turn.actions.Add(new MoveAction(turn));
+            else       // TODO + ruler
+                turn.actions.Add(new SpawnAction(turn));
+            inputHandler = turn.actions[0].InputHandler;
 
-        update = Update_Game_Decision;
+            update = Update_Game_Decision;
+        }
+        else
+            update = Update_Empty;
 
-        Debug.Log(turn.actions[0].Point);
     }
 
 
@@ -191,21 +193,16 @@ public class Player : NetworkBehaviour {
         {
             if (Input.GetKeyDown(KeyCode.R))
             {
+                // first, we need to disable upd performing
+
                 CmdSetReady();
                 CmdSyncTurn(turn.Serialized);
+
+                ReturnToInitialTurnState();
             }
             else
             {
                 inputHandler();
-
-                /*if (!isAlive)
-                {
-                    ListenMouseForSpawn();
-                }
-                else
-                    if(avatar!=null) // check spawn delays
-                        avatar.update();
-                        */
             }
         }
         else
@@ -220,9 +217,24 @@ public class Player : NetworkBehaviour {
     }
     public void Update_Game_Performance()
     {
-        if (turn.Iterate())
+        if (!isReady && turn.Iterate())
         {
-            CmdSetReady();
+            if (hasAuthority)
+            {
+                isReady = true; // see comment \/ below
+                CmdSetReady();
+            }
+            // others will wait for sync and just get true
+            //  from turn.Iterate()
+
+            // but also we either need to
+            // check and set isReady. Because 
+            // if for next frame, authorized will not synced yet
+            // it will send another cmd request
+
+            // sure, we can check sender within CmdSetReady()
+            // but is it need? Hmm.. maybe it will improve performance to one check in every frame less TODO
+
             Debug.Log("Ended");
         }
     }
@@ -308,6 +320,7 @@ public class SpawnAction : TurnAction
 
     public override void SyncNonSync(Turn turn)
     {
+        this.turn = turn;
     }
 
 }
