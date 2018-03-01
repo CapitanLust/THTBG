@@ -181,7 +181,7 @@ public class MoveAction : TurnAction
         this.turn = turn;
         avatar = turn.Owner.avatar;
     }
-
+    
 }
 
 /*

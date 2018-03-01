@@ -127,3 +127,10 @@ public abstract class TurnAction
 }
 
 
+public interface IUsingFloorCursor
+{
+    void ActivateFCursor();
+    void ControllingFCursor(Vector3 point);
+    void ChangeFCursotState(GameManager.UI.FloorCursorState state);
+    void DisableFCursor();
+}

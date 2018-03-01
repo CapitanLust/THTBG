@@ -252,7 +252,7 @@ public class Player : NetworkBehaviour {
 
 
 [Serializable]
-public class SpawnAction : TurnAction
+public class SpawnAction : TurnAction, IUsingFloorCursor
 {
     [NonSerialized]
     bool setted = false;
@@ -261,8 +261,7 @@ public class SpawnAction : TurnAction
     {
         this.turn = turn;
 
-        turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
-        turn.Owner.ui.SetActiveOfFloorCursor(true);
+        ActivateFCursor();
     }
 
     public override void InputHandler()
@@ -275,14 +274,14 @@ public class SpawnAction : TurnAction
 
             if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Floor")
             {
-                turn.Owner.ui.SetFloorCursor(hit.point);
+                ControllingFCursor(hit.point);
 
                 if (Input.GetMouseButtonDown(0))
                 {
                     setted = true;
                     Point = hit.point;
 
-                    turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Setted);
+                    ChangeFCursotState(GameManager.UI.FloorCursorState.Setted);
                 }
             }
         }
@@ -291,7 +290,7 @@ public class SpawnAction : TurnAction
             if (Input.GetMouseButtonDown(1))
             {
                 setted = false;
-                turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
+                ChangeFCursotState(GameManager.UI.FloorCursorState.Deciding);
             }
         }
     }
@@ -302,7 +301,7 @@ public class SpawnAction : TurnAction
 
         turn.Owner.gameManager.Spawn(Point, turn.Owner);
 
-        turn.Owner.gameManager.ui.SetActiveOfFloorCursor(false);
+        DisableFCursor();
 
         return true; // TODO or GameManager.Spawn -> bool ?
     }
@@ -311,5 +310,30 @@ public class SpawnAction : TurnAction
     {
         this.turn = turn;
     }
+
+
+
+    #region IFloorCursot implementation
+
+    public void ActivateFCursor()
+    {
+        turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
+        turn.Owner.ui.SetActiveOfFloorCursor(true);
+    }
+    public void ControllingFCursor(Vector3 point)
+    {
+        turn.Owner.ui.SetFloorCursor(point);
+    }
+    public void ChangeFCursotState(GameManager.UI.FloorCursorState state)
+    {
+        turn.Owner.ui.SetFloorCursorState(state);
+    }
+    public void DisableFCursor()
+    {
+        turn.Owner.gameManager.ui.SetActiveOfFloorCursor(false);
+    }
+
+    #endregion
+
 
 }
