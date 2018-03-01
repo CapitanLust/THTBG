@@ -185,7 +185,7 @@ public class GameManager : NetworkBehaviour {
         public void SetFloorCursor (Vector3 pointOnFloor)
         {
             FloorCursor.transform.position = pointOnFloor
-                + new Vector3(0,0.01f,0);
+                + new Vector3(0f,0.01f,0f);
             // TODO rotation and apply Cursor of certain Equipment
         }
         public void SetActiveOfFloorCursor(bool active)

@@ -24,7 +24,8 @@ public class PlayerAvatar : MonoBehaviour {
     public void Move (Vector3 toward)
     {
         transform.position += toward * speed;
-        //transform.position += new Vector3(toward.x * speed, 0, toward.y * speed);
+        //LookAtDir(toward);
+        LookAtDirSmooth(toward);
     }
 
     public void Combat (Vector3 point)
@@ -84,6 +85,37 @@ public class PlayerAvatar : MonoBehaviour {
         transform.position = player.turn.actions[0].Point; // definitely MoveAct. Def-ly with init pos
     }
 
+
+    public void LookAt (Vector3 point)
+    {
+        var difNorm = (point - transform.position).normalized;
+        float angle = Mathf.Atan2(difNorm.z, difNorm.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 90f - angle, 0f);
+        // don't call other method to little speed up
+    }
+    public void LookAtDir (Vector3 direction)
+    {
+        var difNorm = direction.normalized;
+        float angle = Mathf.Atan2(difNorm.z, difNorm.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 90f - angle, 0f);
+    }
+
+    public void LookAtDirSmooth (Vector3 direction)
+    {
+        var difNorm = direction.normalized;
+        float angle = Mathf.Atan2(difNorm.z, difNorm.x) * Mathf.Rad2Deg;
+
+        transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                Quaternion.Euler(0f, 90f - angle, 0f),
+                .427f // (that accuracy after 0.4 is just random approximation from my head)
+                // i think, u know that feelin' :D
+            );
+    }
+
+
+    // TODO sort voids
+
 }
 
 [Serializable]
@@ -93,7 +125,7 @@ public class MoveAction : TurnAction
     // for not long way to avatar (thru turn.Owner.av..)
     PlayerAvatar avatar;
     [NonSerialized]
-    float distanceDelta = 0;
+    float distanceDelta = 0f;
 
     public MoveAction(Turn turn)
     {
@@ -107,7 +139,7 @@ public class MoveAction : TurnAction
     {
         Vector3 moveToward = new Vector3(
                 Input.GetAxis("Horizontal"),
-                0,
+                0f,
                 Input.GetAxis("Vertical"));
 
         if (moveToward.magnitude > float.Epsilon)
@@ -155,6 +187,9 @@ public class MoveAction : TurnAction
 /*
 public class Combat : TurnAction
 {
+    [NonSerialized]
+    bool setted = false;
+
     public override bool Action()
     {
         // avatar.Weapon (field)
@@ -162,5 +197,4 @@ public class Combat : TurnAction
         Debug.Log("wtfc");
         return true;
     }
-}
-*/
+}*/

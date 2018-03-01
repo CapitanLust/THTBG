@@ -254,6 +254,7 @@ public class Player : NetworkBehaviour {
 [Serializable]
 public class SpawnAction : TurnAction
 {
+    [NonSerialized]
     bool setted = false;
 
     public SpawnAction (Turn turn)
