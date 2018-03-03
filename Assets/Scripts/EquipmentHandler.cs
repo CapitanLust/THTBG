@@ -10,8 +10,9 @@ public class WeaponHandler : EquipmentHandler
 
     public int CurMag;
 
-    void Start()
+    public void Init(Weapon info)
     {
+        this.info = info;
         CurMag = info.Mag;
     }
 

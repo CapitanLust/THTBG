@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Equipment : ScriptableObject // important!
+[Serializable]
+public class Equipment // : ScriptableObject // not anymore
 {
 
     public float Radius;
@@ -12,14 +13,16 @@ public class Equipment : ScriptableObject // important!
     // TODO to have own cursor
 }
 
-[CreateAssetMenu(menuName = "Equipment/Weapon")]
+//[CreateAssetMenu(menuName = "Equipment/Weapon")]
+[Serializable]
 public class Weapon : Equipment
 {
     public float Damage;
     public int Mag;
 }
 
-[CreateAssetMenu(menuName = "Equipment/Weapon")]
+//[CreateAssetMenu(menuName = "Equipment/Weapon")]
+[Serializable]
 public class Gadget : Equipment
 {
 }

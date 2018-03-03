@@ -195,5 +195,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 021aa7f600010c14cb36bd4603e23979, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  info: {fileID: 0}
-  asd: {fileID: 0}
+  info: {fileID: 11400000, guid: d1e1073509136ab4aaeec680f5dca28a, type: 2}
+  CurMag: 0

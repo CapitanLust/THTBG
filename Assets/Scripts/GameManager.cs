@@ -30,11 +30,15 @@ public class GameManager : NetworkBehaviour {
     public PlayerAvatar avatarPrefab;
     public UI ui;
 
+    Data data;
+
 
     #region Initialization
 
     void Awake()
     {
+        data = GameObject.Find("Data").GetComponent<Data>();
+
         lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
         networkManager = lobby.netManager;
 
@@ -135,7 +139,7 @@ public class GameManager : NetworkBehaviour {
         var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
         renderer.materials[0].color = player.Color.ToColor();
 
-        //if (player.hasAuthority) ui.ClearSpawnPoint(); //TODO point to common ui points per turns
+        player.loadout.Inflate(avatar, data);
     }
 
 

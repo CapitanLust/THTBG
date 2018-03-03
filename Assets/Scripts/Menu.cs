@@ -17,8 +17,10 @@ public class Menu : MonoBehaviour {
         // for debug
         ui.sl_PlayerColor.value = UnityEngine.Random.Range(0, 5);
         ui.inp_Nik.text = "d-" + UnityEngine.Random.Range(100, 999);
+
         OnInpNikChanged(); OnSliderColorChanged(); // forced calls
-        
+        OnDropDownWeaponChanged();
+
     }
 
     public void Create()
@@ -42,11 +44,17 @@ public class Menu : MonoBehaviour {
         public InputField inp_Nik, inp_ip;
         public Slider sl_PlayerColor;
         public Text tx_PlayerColor;
+        public Dropdown drop_Weapon;
     }
     
     public void OnInpNikChanged()
     {
         Cmn.Nik = ui.inp_Nik.text;
+    }
+
+    public void OnDropDownWeaponChanged()
+    {
+        Cmn.Weapon = ui.drop_Weapon.captionText.text;
     }
 
     public void OnSliderColorChanged()

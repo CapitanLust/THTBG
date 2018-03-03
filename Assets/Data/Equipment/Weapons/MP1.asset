@@ -9,9 +9,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 0}
-  m_Name: Grach
+  m_Name: MP1
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
-  Radius: 10
-  Name: Grach
-  Damage: 15
-  Mag: 8
+  Radius: 11
+  Name: MP1
+  Damage: 9
+  Mag: 14

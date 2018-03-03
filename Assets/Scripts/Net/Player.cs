@@ -32,6 +32,9 @@ public class Player : NetworkBehaviour {
 
     public PlayerAvatar avatar;
 
+    [SyncVar]
+    public Loadout loadout = new Loadout();
+
 
     public GameManager gameManager;
     public GameManager.UI ui;
@@ -58,6 +61,7 @@ public class Player : NetworkBehaviour {
         if (SceneManager.GetActiveScene().name == "Lobby")
         {
             CmdSetMyParameters(Cmn.Nik, Cmn.PlayerColor);
+            CmdSetLoadout(Cmn.Weapon, "", "");
         }
     }
 
@@ -73,18 +77,32 @@ public class Player : NetworkBehaviour {
             if (ReadyToRegistrate && !lobby.players.Contains(this))
                 lobby.AddPlayer(this);
         }
-
+        
         DontDestroyOnLoad(gameObject);
     }
+
 
 
 
     [Command]
     void CmdSetMyParameters(string nik, Cmn.EPlayerColor color)
     {
+        // they will be synced
         Nik = nik;
         Color = color;
         ReadyToRegistrate = true;
+    }
+    [Command]
+    void CmdSetLoadout(string weaponName, string gadget1Name, string gadget2Name)
+    {
+        RpcSyncLoadout(weaponName, gadget1Name, gadget2Name);        
+    }
+    [ClientRpc] // again rpc because of sync-ing class
+    void RpcSyncLoadout (string weaponName, string gadget1Name, string gadget2Name)
+    {
+        loadout.WeaponName = weaponName;
+        loadout.Gadget1Name = gadget1Name;
+        loadout.Gadget2Name = gadget2Name;
     }
 
     #endregion
@@ -184,8 +202,8 @@ public class Player : NetworkBehaviour {
             {
                 // first, we need to disable upd performing
 
-                CmdSetReady();
                 CmdSyncTurn(turn.Serialized);
+                CmdSetReady();
 
                 ReturnToInitialTurnState();
             }
@@ -208,11 +226,10 @@ public class Player : NetworkBehaviour {
     {
         if (!isReady && turn.Iterate())
         {
+            isReady = true; // see comment \/ below // TODO check it
             if (hasAuthority)
-            {
-                isReady = true; // see comment \/ below
                 CmdSetReady();
-            }
+
             // others will wait for sync and just get true
             //  from turn.Iterate()
 

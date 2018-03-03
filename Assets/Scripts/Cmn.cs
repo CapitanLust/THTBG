@@ -8,6 +8,7 @@ using UnityEngine;
 public static class Cmn {
 
     public static string Nik;
+    public static string Weapon;
 
     public enum EPlayerColor :int
         { Blue, Red, Gray, Yellow, Green }
@@ -58,8 +59,6 @@ public static class Cmn {
         {
             return binaryFormatter.Deserialize(ms) as Turn;
         }
-
-        return null;
     }
 
     /// <summary>
