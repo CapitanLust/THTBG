@@ -180,6 +180,12 @@ public class Player : NetworkBehaviour {
     }
 
 
+    public void SetInputHandlerOnLast()
+    {
+        inputHandler = turn.actions[turn.actions.Count - 1].InputHandler;
+    }
+
+
     #region input
 
     void Update()
@@ -298,6 +304,8 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
                     setted = true;
                     Point = hit.point;
 
+                    Confirmed = true;
+
                     ChangeFCursotState(GameManager.UI.FloorCursorState.Setted);
                 }
             }
@@ -308,6 +316,8 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
             {
                 setted = false;
                 ChangeFCursotState(GameManager.UI.FloorCursorState.Deciding);
+
+                Confirmed = false;
             }
         }
     }

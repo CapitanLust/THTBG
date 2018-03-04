@@ -61,6 +61,12 @@ public class Turn
         actionsDid = 0; // TODO ?
 
     }
+    public void ClearOfUnconfirmed()
+    {
+        actions = actions.FindAll(x => x.Confirmed);
+        //foreach (var a in actions)
+            //if (!a.Confirmed) actions.Remove(a);
+    }
 
     public bool Iterate()
     {
@@ -78,6 +84,8 @@ public class Turn
     {
         get
         {
+            /// !!! IMPORTANT !!
+            ClearOfUnconfirmed();
             return Cmn.SerializeTurn(this);
         }
     }
@@ -97,6 +105,9 @@ public abstract class TurnAction
 {
     [NonSerialized]
     public Turn turn;
+
+    [NonSerialized]
+    public bool Confirmed = false;
 
     float x = 0, y = 0, z = 0;
     public Vector3 Point

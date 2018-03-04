@@ -131,10 +131,13 @@ public class MoveAction : TurnAction
     {
         this.turn = turn;
         avatar = turn.Owner.avatar;
+        oldMousePos = Input.mousePosition;
 
         Point = avatar.transform.position;
     }
 
+    [NonSerialized]
+    Vector3 oldMousePos;
     public override void InputHandler()
     {
         Vector3 moveToward = new Vector3(
@@ -150,21 +153,41 @@ public class MoveAction : TurnAction
                 distanceDelta += moveToward.magnitude * avatar.speed; 
             else
             {
-                //turn.actions.Add(new Move() { point = transform.position });
-
                 // Dump moveAct, add new one and relink inpHandler
-                //Point = avatar.transform.position;
-                turn.actions.Add(new MoveAction(turn));
-                turn.Owner.inputHandler = turn.actions[turn.actions.Count-1].InputHandler;
+                Confirmed = true;
+                ChangeStateTo_NewMoveAct();
 
                 Debug.Log("added move");
             }
             return;
         }
+        else
+        {
+            // if input type changed, switch to new action TODO
+
+            if((Input.mousePosition - oldMousePos).magnitude > .002f)
+            {
+                Confirmed = true;
+                ChangeStateTo_WeaponAct();
+            }
+        }
 
 
+        oldMousePos = Input.mousePosition;
+    }
 
-        // if input type changed, switch to new action TODO
+    void ChangeStateTo_NewMoveAct()
+    {
+        turn.actions.Add(new MoveAction(turn));
+        turn.Owner.SetInputHandlerOnLast();
+    }
+    void ChangeStateTo_WeaponAct()
+    {
+        turn.actions.Add(new MoveAction(turn));
+        turn.actions.Add(new WeaponAction(turn));
+        turn.Owner.SetInputHandlerOnLast();
+
+        Debug.Log("changed moveAct to weaponAct");
     }
 
     public override bool Action()
@@ -184,17 +207,110 @@ public class MoveAction : TurnAction
     
 }
 
-/*
-public class Combat : TurnAction
+
+[Serializable]
+public class WeaponAction : TurnAction, IUsingFloorCursor
 {
     [NonSerialized]
-    bool setted = false;
+    WeaponHandler weaponHandler;
+    [NonSerialized]
+    PlayerAvatar avatar;
+
+    public WeaponAction(Turn turn)
+    {
+    // TODO same call \/ at old realized Actions
+        SyncNonSync(turn);
+
+        ActivateFCursor();
+    }
+
+
+    public override void InputHandler()
+    {
+        // TODO check for availabilty 
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Floor")
+        {
+            avatar.LookAt(hit.point);
+
+            ControllingFCursor(hit.point);
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                Point = hit.point;
+
+                // TODO spawn new cursors
+                ChangeFCursotState(GameManager.UI.FloorCursorState.Setted);
+
+                Confirmed = true;
+
+                ChangeStateTo_MoveAction();
+
+                return;
+            }
+        }
+        
+        if (Mathf.Abs( Input.GetAxis("Horizontal")) > float.Epsilon
+            || Mathf.Abs(Input.GetAxis("Vertical")) > float.Epsilon)
+            ChangeStateTo_MoveAction();
+    }
+
+    void ChangeStateTo_MoveAction()
+    {
+        DisableFCursor();
+        turn.actions.Add(new MoveAction(turn));
+        turn.Owner.SetInputHandlerOnLast();
+
+        Debug.Log("changed weapAct to moveAct");
+    }
+
+
+    public override void SyncNonSync(Turn turn)
+    {
+        this.turn = turn;
+        weaponHandler = turn.Owner.loadout.WeaponHandler;
+        avatar = turn.Owner.avatar;
+    }
 
     public override bool Action()
     {
-        // avatar.Weapon (field)
-        //avatar.Combat(Point);
-        Debug.Log("wtfc");
-        return true;
+        avatar.LookAt(Point);
+        if (!weaponHandler.StartedShoot)
+            weaponHandler.Shoot();
+        if (weaponHandler.ShootedOne)
+        {
+            weaponHandler.ShootedOne = false;
+            weaponHandler.StartedShoot = false;
+            return true;
+        }
+
+        return false; ;
     }
-}*/
+
+
+
+    #region IFloorCursot implementation
+
+    public void ActivateFCursor()
+    {
+        turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
+        turn.Owner.ui.SetActiveOfFloorCursor(true);
+    }
+    public void ControllingFCursor(Vector3 point)
+    {
+        turn.Owner.ui.SetFloorCursor(point);
+    }
+    public void ChangeFCursotState(GameManager.UI.FloorCursorState state)
+    {
+        turn.Owner.ui.SetFloorCursorState(state);
+    }
+    public void DisableFCursor()
+    {
+        turn.Owner.gameManager.ui.SetActiveOfFloorCursor(false);
+    }
+
+    #endregion
+
+}
