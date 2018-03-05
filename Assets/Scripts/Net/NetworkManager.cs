@@ -33,13 +33,6 @@ public class NetworkManager : UnityEngine.Networking.NetworkManager {
     {
         base.OnServerAddPlayer(conn, playerControllerId);  //   don't. We want to control prefabs
 
-        //Player newPlayer = Instantiate(playerPrefab); // + as or <> ?
-        //DontDestroyOnLoad(newPlayer);
-        //NetworkServer.AddPlayerForConnection(conn, newPlayer.gameObject, playerControllerId);
-
-        Debug.Log("Player connected");
-        //RpcAddPlayerToList(conn);
-
         if (onPlayerAdded != null) onPlayerAdded(conn);
     }
 

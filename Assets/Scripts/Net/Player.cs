@@ -77,8 +77,6 @@ public class Player : NetworkBehaviour {
     {
         base.OnStartClient();
 
-        Debug.Log("a1");
-
         if (SceneManager.GetActiveScene().name == "Lobby")
         {
             var lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
@@ -177,8 +175,9 @@ public class Player : NetworkBehaviour {
             if (isAlive)
                 turn.actions.Add(new MoveAction(turn));
             else       
-                if(gameManager.ruler.CanRevive)
+                if(gameManager.ruler.CanRevive())
                     turn.actions.Add(new SpawnAction(turn));
+
             inputHandler = turn.actions[0].InputHandler;
 
             update = Update_Game_Decision;

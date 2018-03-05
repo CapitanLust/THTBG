@@ -5,6 +5,15 @@ using UnityEngine;
 [Serializable]
 public class DM : GameRuler {
 
+    bool firstSpawn = false;
+
+    public override bool CanRevive()
+    {
+        if(!firstSpawn)
+            return firstSpawn = true;
+        return false;
+    }
+
     public override bool CheckMatchForEnd()
     {
         int survived = 0;
@@ -12,5 +21,5 @@ public class DM : GameRuler {
             if (p.isAlive) survived++;
         return survived == 1;
     }
-
+    
 }

@@ -29,7 +29,7 @@ public class Loadout
 
         WeaponHandler.transform.SetParent(avatar.transform, false);
 
-        WeaponHandler.Init( data.GetWeaponByName(WeaponName) );
+        WeaponHandler.Init( data.GetWeaponByName(WeaponName), avatar.player );
     }
 
 }

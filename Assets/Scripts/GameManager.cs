@@ -71,9 +71,25 @@ public class GameManager : NetworkBehaviour {
 
         ui.UpdPlayerList(players);
 
-        if (hasAuthority)
-            StartMatch();
+        // TODO nail with desync of OnStartClient and OnStartServer
+        StartCoroutine(WaitAnd(() => {
+            CmdStartMatch();
+        }, .5f));
     }
+    IEnumerator WaitAnd(Action whatNext, float awaitTime)
+    {
+        yield return new WaitForSeconds(awaitTime);
+        whatNext();
+    }
+
+    [Command]
+    public void CmdStartMatch()
+    {
+        RpcOnStartMatch();
+    }
+
+
+
     #endregion
 
     #region Playing
@@ -133,15 +149,11 @@ public class GameManager : NetworkBehaviour {
 
     public void ExitMatch()
     {
-        lobby.netManager.ServerChangeScene("Lobby");
+        //lobby.State = Lobby.LobbyState.Lobby;
+        //lobby.netManager.ServerChangeScene("Lobby");
     }
 
-
-    public void StartMatch()
-    {
-        RpcOnStartMatch();
-        // other staff
-    }
+    
     [ClientRpc]
     public void RpcOnStartMatch()
     {
@@ -157,6 +169,10 @@ public class GameManager : NetworkBehaviour {
     [ClientRpc]
     public void RpcOnEndMatch()
     {
+        OnEndMatch();
+    }
+    public void OnEndMatch()
+    {
         IsMatchStarted = false;
         foreach (var p in players)
             p.Stop();
@@ -165,6 +181,16 @@ public class GameManager : NetworkBehaviour {
         ui.tx_playerList.text = "Match ended\n";
         foreach (var p in players)
             ui.tx_playerList.text += p.Nik + " " + p.XP + "xp";
+    }
+
+    [Command]
+    public void CmdAwardKiller(string nik, float successQ)
+    {
+        var killer = lobby.GetPlayerByNik(nik);
+        killer.XP += (int)(successQ * 10f);
+
+        if (WePlayer == killer)
+            ui.Killmarker();
     }
 
     #endregion
@@ -198,6 +224,8 @@ public class GameManager : NetworkBehaviour {
         public GameObject btn_ExitMatch;
 
         public SpriteRenderer FloorCursor;
+
+        public Animator animHitmarker;
 
         public FloorCursorColors floorCursorColors;
         [Serializable]
@@ -254,6 +282,17 @@ public class GameManager : NetworkBehaviour {
             }
         }
         public enum FloorCursorState { Deciding, Setted, Unavailable };
+
+
+        public void Hitmarker()
+        {
+            animHitmarker.SetTrigger("hit");
+        }
+        public void Killmarker()
+        {
+            animHitmarker.SetTrigger("kill");
+        }
+
 
     }
 

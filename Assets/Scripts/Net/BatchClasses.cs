@@ -115,7 +115,7 @@ public abstract class TurnAction
         set { x = value.x; y = value.y; z = value.z; }
     }
 
-    public float SuccesQuotient;
+    public float SuccesQuotient = 1;
 
     [NonSerialized]
     public float Radius;

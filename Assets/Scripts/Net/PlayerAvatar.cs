@@ -5,13 +5,17 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
 
-public class PlayerAvatar : MonoBehaviour {
+public class PlayerAvatar : NetworkBehaviour {
 
     public Player player;
 
     public float speed = 0.1f;
+    public float Radius = .5f;
     public bool isTurning = false,
                 isCommonTurning = false;
+
+    [SyncVar]
+    public float HP = 100;
 
     //public Turn turn = new Turn();
 
@@ -115,6 +119,31 @@ public class PlayerAvatar : MonoBehaviour {
             );
     }
 
+
+    [Command]
+    public void CmdGetDamage (float damage, string hitterNik, float successQ)
+    {
+        HP -= damage;
+
+        if (HP <= 0)
+        {
+            RpcDie();
+            player.gameManager.CmdAwardKiller(hitterNik, successQ);
+        }
+    }
+
+    public void Die()
+    {
+        player.isAlive = false;
+        player.update = player.Update_Empty;
+        // TODO anim
+        Destroy(gameObject);
+    }
+    [ClientRpc]
+    public void RpcDie()
+    {
+        Die();
+    }
 
     // TODO sort voids
 
@@ -314,7 +343,7 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
         // TODO review this logic
         if (!weaponHandler.ActionStarted)
-            weaponHandler.Shoot(Point);
+            weaponHandler.Shoot(Point, SuccesQuotient);
         if (weaponHandler.ActionEnded)
         {
             weaponHandler.ActionStarted = false;

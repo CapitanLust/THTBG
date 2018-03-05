@@ -8,7 +8,6 @@ public abstract class GameRuler : MonoBehaviour {
 
     public bool FriendlyFire = false;
 
-    public bool CanRevive = false;
 
     public GameManager gameManager;
 
@@ -21,5 +20,7 @@ public abstract class GameRuler : MonoBehaviour {
     {
         return true;
     }
+
+    public virtual bool CanRevive() { return false; }
 
 }

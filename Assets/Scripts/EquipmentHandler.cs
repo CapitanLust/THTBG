@@ -18,14 +18,19 @@ public class WeaponHandler : EquipmentHandler
     public Animator anim;
     public Transform bulletPrefab, 
                      bulletSpawn;
+
+    public Player player;
     
-    public void Init(Weapon info)
+    public void Init(Weapon info, Player player)
     {
         this.info = info;
         CurMag = info.Mag;
+
+        this.player = player;
     }
 
-    public virtual void Shoot(Vector3 point)
+    // TODO change arguments to link to Turn
+    public virtual void Shoot(Vector3 point, float successQ)
     {
         ActionStarted = true;
         // (!!!) Temporary on WaitForSeconds
@@ -33,26 +38,48 @@ public class WeaponHandler : EquipmentHandler
         VisualShot(point);
         StartCoroutine(WaitAnd(
             () => {
-                ProcessShoot(point);
+                ProcessShoot(point, successQ);
             },
             .5f
         ));
             
     }
 
-    protected virtual void ProcessShoot(Vector3 point)
+    protected virtual void ProcessShoot(Vector3 point, float successQ)
     {
         if (CurMag > 0)
         {
             CurMag--;
-            MeasureAftermath(point);
+            if(player.hasAuthority)
+                MeasureAftermath(point, successQ);
         }
 
         ActionEnded = true;
     }
-    public virtual void MeasureAftermath(Vector3 point)
+    public virtual void MeasureAftermath(Vector3 point, float successQ)
     {
+        foreach(var p in player.gameManager.players)
+        {
+            // ray for check walls
+            // and TODO mask for breakable-thru walls
+            var difVector = p.avatar.transform.position - point;
+            if (difVector.magnitude >= info.Radius + p.avatar.Radius)
+                continue;
 
+            var ray = new Ray(point, p.avatar.transform.position - point);
+            RaycastHit hit;
+
+            if(Physics.Raycast(ray, out hit) && hit.collider.tag == "Player Avatar")
+                SendDamage( hit.collider.GetComponent<PlayerAvatar>(), successQ );
+        }
+    }
+
+    public void SendDamage(PlayerAvatar victim, float successQ)
+    {
+        victim.CmdGetDamage(info.Damage * successQ, player.Nik, successQ);
+        Debug.Log(player.Nik + " Hitted " + victim.player.Nik);
+        // TODO hitmarker
+        player.ui.Hitmarker();
     }
 
     public virtual void Reload() 
@@ -83,7 +110,7 @@ public class WeaponHandler : EquipmentHandler
     {
         anim.SetTrigger("Shoot");
 
-        var newBull = Instantiate<Transform>(bulletPrefab, bulletSpawn);
+        Instantiate<Transform>(bulletPrefab, bulletSpawn);
         //newBull.Rotate() -- random spread or aimed to the victim avatar
     }
 
