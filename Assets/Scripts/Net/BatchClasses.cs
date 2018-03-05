@@ -53,19 +53,18 @@ public class Turn
                       // /\ second check because of -- if we complete it for 1 step.
                      // ( solution designed for performing through Update and frame-logic )
             //Owner.CmdSetReady();
+        // /\ complitely moved to update
     }
 
     public void Clear()
     {
         actions.Clear();
-        actionsDid = 0; // TODO ?
-
+        actionsDid = 0; 
     }
+
     public void ClearOfUnconfirmed()
     {
         actions = actions.FindAll(x => x.Confirmed);
-        //foreach (var a in actions)
-            //if (!a.Confirmed) actions.Remove(a);
     }
 
     public bool Iterate()

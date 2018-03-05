@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Networking;
+using System.Collections;
 
 public class PlayerAvatar : MonoBehaviour {
 
@@ -215,6 +217,8 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
     WeaponHandler weaponHandler;
     [NonSerialized]
     PlayerAvatar avatar;
+    [NonSerialized]
+    bool can = true;
 
     public WeaponAction(Turn turn)
     {
@@ -227,6 +231,8 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
     public override void InputHandler()
     {
+        if (!can) return;
+
         // TODO check for availabilty 
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -239,6 +245,10 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
             if (Input.GetMouseButtonDown(0))
             {
+                // TODO GetSuccessQ
+
+                // TODO shot even if the mag is empty?
+
                 Point = hit.point;
 
                 // TODO spawn new cursors
@@ -246,7 +256,15 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
                 Confirmed = true;
 
-                ChangeStateTo_MoveAction();
+                // temp wait TODO
+                can = false; // TODO commonize (forgot that word)
+                weaponHandler.VisualShot(Point); // TODO and count mag?
+                weaponHandler.StartCoroutine(WaitAnd(() => 
+                    {
+                        ChangeStateTo_MoveAction();
+                    },
+                    .5f
+                ));
 
                 return;
             }
@@ -255,6 +273,14 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
         if (Mathf.Abs( Input.GetAxis("Horizontal")) > float.Epsilon
             || Mathf.Abs(Input.GetAxis("Vertical")) > float.Epsilon)
             ChangeStateTo_MoveAction();
+
+        else if(Input.GetKeyDown(KeyCode.R))
+            ChangeStateTo_Reload();
+    }
+    IEnumerator WaitAnd(Action whatNext, float awaitTime)
+    {
+        yield return new WaitForSeconds(awaitTime);
+        whatNext();
     }
 
     void ChangeStateTo_MoveAction()
@@ -264,6 +290,14 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
         turn.Owner.SetInputHandlerOnLast();
 
         Debug.Log("changed weapAct to moveAct");
+    }
+
+    void ChangeStateTo_Reload()
+    {
+        turn.actions.Add(new WeaponAction_Reload(turn));
+        turn.Owner.SetInputHandlerOnLast();
+
+        Debug.Log("changed weapAct to moveReloadAct");
     }
 
 
@@ -277,12 +311,14 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
     public override bool Action()
     {
         avatar.LookAt(Point);
-        if (!weaponHandler.StartedShoot)
-            weaponHandler.Shoot();
-        if (weaponHandler.ShootedOne)
+
+        // TODO review this logic
+        if (!weaponHandler.ActionStarted)
+            weaponHandler.Shoot(Point);
+        if (weaponHandler.ActionEnded)
         {
-            weaponHandler.ShootedOne = false;
-            weaponHandler.StartedShoot = false;
+            weaponHandler.ActionStarted = false;
+            weaponHandler.ActionEnded = false;
             return true;
         }
 
@@ -295,6 +331,8 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
     public void ActivateFCursor()
     {
+        turn.Owner.ui.FloorCursor.transform.localScale
+            = new Vector3(weaponHandler.info.Radius, weaponHandler.info.Radius, 1);
         turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
         turn.Owner.ui.SetActiveOfFloorCursor(true);
     }
@@ -312,5 +350,66 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
     }
 
     #endregion
+
+}
+
+[Serializable]
+public class WeaponAction_Reload : TurnAction
+{
+    [NonSerialized]
+    WeaponHandler weaponHandler;
+
+    public WeaponAction_Reload(Turn turn)
+    {
+        SyncNonSync(turn);
+    }
+
+    public override void InputHandler()
+    {
+        // + measure success Q, that will be affect on time of reload TODO
+
+        // temp:
+        weaponHandler.StartCoroutine(WaitAnd(
+            () => {
+                Confirmed = true;
+                ChangeStateTo_MoveAct();
+            },
+            weaponHandler.info.ReloadTime
+        ));
+    }
+    IEnumerator WaitAnd(Action whatNext, float awaitTime)
+    {
+        yield return new WaitForSeconds(awaitTime);
+        whatNext();
+    }
+
+    void ChangeStateTo_MoveAct()
+    {
+        turn.actions.Add(new MoveAction(turn));
+        turn.Owner.SetInputHandlerOnLast();
+
+        Debug.Log("changed weapReloadAct to moveAct");
+    }
+
+    public override bool Action()
+    {
+        // TODO review this logic
+        if (!weaponHandler.ActionStarted)
+            weaponHandler.Reload();
+        if (weaponHandler.ActionEnded)
+        {
+            weaponHandler.ActionStarted = false;
+            weaponHandler.ActionEnded = false;
+            return true;
+        }
+
+        return false; ;
+    }
+
+    public override void SyncNonSync(Turn turn)
+    {
+        this.turn = turn;
+        weaponHandler = turn.Owner.loadout.WeaponHandler;
+    }
 
 }

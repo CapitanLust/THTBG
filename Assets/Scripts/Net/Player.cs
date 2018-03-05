@@ -204,7 +204,7 @@ public class Player : NetworkBehaviour {
 
         if (!isReady) 
         {
-            if (Input.GetKeyDown(KeyCode.R))
+            if (Input.GetKeyDown(KeyCode.E))
             {
                 // first, we need to disable upd performing
 

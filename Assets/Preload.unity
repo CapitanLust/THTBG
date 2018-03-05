@@ -198,7 +198,9 @@ MonoBehaviour:
     Name: Grach
     Damage: 15
     Mag: 8
+    ReloadTime: 0
   - Radius: 11
     Name: MP1
     Damage: 10
     Mag: 15
+    ReloadTime: 0

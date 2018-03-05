@@ -19,6 +19,7 @@ public class Weapon : Equipment
 {
     public float Damage;
     public int Mag;
+    public float ReloadTime; // TODO it just for info. Time will be counted in animations
 }
 
 //[CreateAssetMenu(menuName = "Equipment/Weapon")]
