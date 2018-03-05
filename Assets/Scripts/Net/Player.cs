@@ -14,6 +14,9 @@ public class Player : NetworkBehaviour {
     [SyncVar]
     public Cmn.EPlayerColor Color;
 
+    [SyncVar]
+    public int XP;
+
     [SyncVar(hook = "Registrate")]
     public bool ReadyToRegistrate = false;
 
@@ -51,6 +54,11 @@ public class Player : NetworkBehaviour {
     {
         if (ReadyToRegistrate = ready)
             GameObject.Find("Lobby").GetComponent<Lobby>().AddPlayer(this);
+    }
+
+    public void Stop()
+    {
+        update = Update_Empty;
     }
 
     public override void OnStartAuthority()
@@ -168,8 +176,9 @@ public class Player : NetworkBehaviour {
         {
             if (isAlive)
                 turn.actions.Add(new MoveAction(turn));
-            else       // TODO + ruler
-                turn.actions.Add(new SpawnAction(turn));
+            else       
+                if(gameManager.ruler.CanRevive)
+                    turn.actions.Add(new SpawnAction(turn));
             inputHandler = turn.actions[0].InputHandler;
 
             update = Update_Game_Decision;
@@ -235,17 +244,6 @@ public class Player : NetworkBehaviour {
             isReady = true; // see comment \/ below // TODO check it
             if (hasAuthority)
                 CmdSetReady();
-
-            // others will wait for sync and just get true
-            //  from turn.Iterate()
-
-            // but also we either need to
-            // check and set isReady. Because 
-            // if for next frame, authorized will not synced yet
-            // it will send another cmd request
-
-            // sure, we can check sender within CmdSetReady()
-            // but is it need? Hmm.. maybe it will improve performance to one check in every frame less TODO
 
             Debug.Log("Ended");
         }

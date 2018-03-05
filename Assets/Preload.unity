@@ -194,12 +194,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Weapons:
-  - Radius: 12
+  - Radius: 24
     Name: Grach
     Damage: 15
     Mag: 8
     ReloadTime: 0
-  - Radius: 11
+  - Radius: 22
     Name: MP1
     Damage: 10
     Mag: 15

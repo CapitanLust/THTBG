@@ -18,10 +18,13 @@ public class GameManager : NetworkBehaviour {
     public Lobby lobby;
     public NetworkManager networkManager;
 
+    public GameRuler ruler; // TODO figure it out
+    //public System.Object Ruler;
+
     public List<Player> players;
     public Player WePlayer; // TODO rename
 
-    public bool isMatchStarted = false;
+    public bool IsMatchStarted = false;
 
     public int readyPlayers = 0;
 
@@ -41,6 +44,8 @@ public class GameManager : NetworkBehaviour {
 
         lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
         networkManager = lobby.netManager;
+
+        //ruler = (GameRuler) Ruler;
 
         onEachPlayerReady = OnEachReady_Decision;
 
@@ -66,7 +71,8 @@ public class GameManager : NetworkBehaviour {
 
         ui.UpdPlayerList(players);
 
-        WePlayer.StartDecision();
+        if (hasAuthority)
+            StartMatch();
     }
     #endregion
 
@@ -100,8 +106,13 @@ public class GameManager : NetworkBehaviour {
     }
     void OnEachReady_Performance()
     {
-        RpcStartDecision();
-        onEachPlayerReady = OnEachReady_Decision;
+        if (!ruler.CheckMatchForEnd())
+        {
+            RpcStartDecision();
+            onEachPlayerReady = OnEachReady_Decision;
+        }
+        else
+            EndMatch();
     }
 
     [ClientRpc]
@@ -119,6 +130,42 @@ public class GameManager : NetworkBehaviour {
 
     }
 
+
+    public void ExitMatch()
+    {
+        lobby.netManager.ServerChangeScene("Lobby");
+    }
+
+
+    public void StartMatch()
+    {
+        RpcOnStartMatch();
+        // other staff
+    }
+    [ClientRpc]
+    public void RpcOnStartMatch()
+    {
+        IsMatchStarted = true;
+        WePlayer.StartDecision();
+    }
+
+    public void EndMatch()
+    {
+        RpcOnEndMatch();
+        ui.btn_ExitMatch.SetActive(true);
+    }
+    [ClientRpc]
+    public void RpcOnEndMatch()
+    {
+        IsMatchStarted = false;
+        foreach (var p in players)
+            p.Stop();
+
+        // temp score summary
+        ui.tx_playerList.text = "Match ended\n";
+        foreach (var p in players)
+            ui.tx_playerList.text += p.Nik + " " + p.XP + "xp";
+    }
 
     #endregion
 
@@ -148,6 +195,7 @@ public class GameManager : NetworkBehaviour {
     {
         public Text tx_log, tx_playerList;
         public RawImage img_SpawnPoint;
+        public GameObject btn_ExitMatch;
 
         public SpriteRenderer FloorCursor;
 
