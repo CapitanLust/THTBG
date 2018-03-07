@@ -17,10 +17,6 @@ public class PlayerAvatar : NetworkBehaviour {
     [SyncVar]
     public float HP = 100;
 
-    //public Turn turn = new Turn();
-
-    // cosmetic // TODO incapsule
-    //public Material 
 
     public void update() // notice that there's lowercase 'u'
     {               // bcse call goes from Player
@@ -41,15 +37,12 @@ public class PlayerAvatar : NetworkBehaviour {
 
     // User Part
 
-    //float distanceDelta = 0;
     Vector3 initialTurnPos;
     
     public void StartTurning()
     {
 
         initialTurnPos = transform.position;
-        //distanceDelta = 0;
-        //turn.Clear();
 
         isCommonTurning = false;
         isTurning = true;

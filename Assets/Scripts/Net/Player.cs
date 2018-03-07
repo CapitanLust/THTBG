@@ -114,16 +114,7 @@ public class Player : NetworkBehaviour {
 
     #endregion
 
-    #region Playtrouhg other networking
-
-    //[Command]
-    //public void CmdAssignAvatar()
-    //{
-    //    avatar.GetComponent<NetworkIdentity>()
-    //        .AssignClientAuthority(connectionToClient);
-    //}
-
-    #endregion
+    
 
     #region Playing
 
@@ -269,15 +260,10 @@ public class Player : NetworkBehaviour {
 
     #endregion
 
-    /*#region functionsal connection with avatar (until avatar is mono)
+    #region Playtrouhg other networking
 
-    [Command]
-    public void CmdGetDamage(float damage, string hitterNik, float successQ)
-    {
-        avatar.HP -= damage;
-    }
-    
-    #endregion*/
+
+    #endregion
 
     public void OnStartMatch ()
     {
@@ -348,32 +334,12 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
     
     public override bool Action()
     {
-        //if (!ActionStarted)
-        //{
-            Debug.Log("SpawnInfo: " + Point);
+        if (turn.Owner.hasAuthority)
+            turn.Owner.CmdSpawnAvatar(Point);
 
-            //turn.Owner.gameManager.Spawn(Point, turn.Owner);
-            if (turn.Owner.hasAuthority)
-                //turn.Owner.gameManager.CmdSpawn(Point, turn.Owner.netId);
-                turn.Owner.CmdSpawnAvatar(Point);
+        DisableFCursor();
 
-            /*turn.Owner.StartCoroutine(WaitAnd(() =>
-            {
-                ActionEnded = true;
-            }, 2));
-
-            ActionStarted = true;*/
-
-            DisableFCursor();
-        //}
-
-        //return ActionEnded; // TODO event
         return true;
-    }
-    IEnumerator WaitAnd(Action whatNext, float awaitTime)
-    {
-        yield return new WaitForSeconds(awaitTime);
-        whatNext();
     }
 
     public override void SyncNonSync(Turn turn)

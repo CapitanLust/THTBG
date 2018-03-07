@@ -10,6 +10,15 @@ public class Equipment // : ScriptableObject // not anymore
 
     public string Name;
 
+    /// <summary>
+    /// variable responsible for: is
+    /// equipment influence effective depends
+    /// on a distance to subject
+    /// </summary>
+    public bool Diffusing = false;
+
+    public bool AreaSizeDependsOnDistance = false;
+
     // TODO to have own cursor
 }
 

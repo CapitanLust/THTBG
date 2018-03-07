@@ -18,13 +18,12 @@ public class GameManager : NetworkBehaviour {
     public Lobby lobby;
     public NetworkManager networkManager;
 
-    public GameRuler ruler; // TODO figure it out
-    //public System.Object Ruler;
+    public GameRuler ruler; 
 
     public List<Player> players;
-    public Player WePlayer; // TODO rename
+    public Player WePlayer; 
 
-    //public List<PlayerAvatar> avatars;
+    //public List<PlayerAvatar> avatars; TODO
     //public PlayerAvatar WeAvatar;
 
     public bool IsMatchStarted = false;
@@ -48,8 +47,6 @@ public class GameManager : NetworkBehaviour {
         lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
         networkManager = lobby.netManager;
 
-        //ruler = (GameRuler) Ruler;
-
         onEachPlayerReady = OnEachReady_Decision;
 
         lobby.State = Lobby.LobbyState.Game;
@@ -58,12 +55,11 @@ public class GameManager : NetworkBehaviour {
     public override void OnStartClient()
     {
         base.OnStartClient();
-
-        // TODO is it Ready and synced already?
+        
         players = lobby.players;
         foreach (var p in players)
         {
-            p.gameManager = this; // TODO call to start
+            p.gameManager = this; 
             p.ui = ui;
 
             if (p.hasAuthority)
@@ -157,8 +153,7 @@ public class GameManager : NetworkBehaviour {
 
     public void ExitMatch()
     {
-        //lobby.State = Lobby.LobbyState.Lobby;
-        //lobby.netManager.ServerChangeScene("Lobby");
+
     }
 
     
@@ -206,83 +201,26 @@ public class GameManager : NetworkBehaviour {
     // Clinet side (TODO sort sides)
     public void Spawn(Vector3 spawnPos, Player player)
     {
-        // WARNING!! since PlayerAvater've became NetworkBehaviour
-        // that can occure sync problem: not considering at same obj on clients
-        // TODO!! TODO!
         var avatar = Instantiate(avatarPrefab) as PlayerAvatar;
 
-        player.avatar = avatar; // TODO change linking logic?
-        avatar.player = player; // or is it quite enough?
-
-        //AddAvatar(avatar, player.Nik);
-
-        // TODO wait for sync
-        //StartCoroutine(WaitAnd(() =>
-        //{
-        //avatar.gameObject.name = "PlayerAvatar " + player.Nik;
-        //CmdAssignAuthority(player.netId);
-        //},
-        //0.4f
-        //));
+        player.avatar = avatar;
+        avatar.player = player;
 
         if (isServer)
         {
             NetworkServer.Spawn(avatar.gameObject);
             avatar.GetComponent<NetworkIdentity>().AssignClientAuthority(player.connectionToClient);
-            
         }
         
 
         avatar.transform.position = spawnPos;
 
         player.isAlive = true;
-
-        // TODO apply settings
-        var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
-        renderer.materials[0].color = player.Color.ToColor();
-
-        player.loadout.Inflate(avatar, data);
-    }
-
-    [Command]
-    public void CmdAssignAuthority(NetworkInstanceId instanceId)
-    {
-        var client = NetworkServer.FindLocalObject(instanceId).GetComponent<Player>();
-        var avatarIdentity = GameObject.Find("PlayerAvatar " + client.Nik)
-                                .GetComponent<NetworkIdentity>();
-        avatarIdentity.AssignClientAuthority(client.connectionToClient);
-    }
-
-    [Command]
-    public void CmdSpawn(Vector3 spawnPos, NetworkInstanceId instanceId)
-    {
-        var player = NetworkServer.FindLocalObject(instanceId).GetComponent<Player>();
-        var avatar = Instantiate(avatarPrefab);
-
-        NetworkServer.SpawnWithClientAuthority(
-            avatar.gameObject, player.gameObject);
         
-        RpcInstantiateSpawned(spawnPos, instanceId, avatar.netId);
-    }
-
-    [ClientRpc]
-    public void RpcInstantiateSpawned(Vector3 spawnPos, NetworkInstanceId instanceId, NetworkInstanceId avatarInstanceId)
-    {
-        var player = ClientScene.FindLocalObject(instanceId).GetComponent<Player>();
-        var avatar = ClientScene.FindLocalObject(avatarInstanceId).GetComponent<PlayerAvatar>();
-
-        player.avatar = avatar; 
-        avatar.player = player;
-
-        avatar.transform.position = spawnPos;
-
-        // TODO apply settings
         var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
         renderer.materials[0].color = player.Color.ToColor();
 
         player.loadout.Inflate(avatar, data);
-
-        player.isAlive = true;
     }
     
 
@@ -333,18 +271,6 @@ public class GameManager : NetworkBehaviour {
                     + (p.isAlive ? p.avatar.HP + "hp\n" : "\n");
         }
         
-        [Obsolete("Use FloorCursor instead", true)]
-        public void MarkSpawnPoint(Vector2 pos)
-        {
-            img_SpawnPoint.rectTransform.position = pos;
-            img_SpawnPoint.gameObject.SetActive(true);
-        }
-        [Obsolete("Use FloorCursor instead", true)]
-        public void ClearSpawnPoint()
-        {
-            img_SpawnPoint.gameObject.SetActive(false);
-        }
-
 
         public void SetFloorCursor (Vector3 pointOnFloor)
         {
