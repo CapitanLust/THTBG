@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Grach : WeaponHandler {
     
-    public override void Shoot(Vector3 point, float successQ)
+    public override void Shoot(TurnAction tAction)
     {
-        base.Shoot(point, successQ);
+        base.Shoot(tAction);
         Debug.Log("Gra4!!");        
     }
 

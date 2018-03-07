@@ -24,6 +24,9 @@ public class GameManager : NetworkBehaviour {
     public List<Player> players;
     public Player WePlayer; // TODO rename
 
+    //public List<PlayerAvatar> avatars;
+    //public PlayerAvatar WeAvatar;
+
     public bool IsMatchStarted = false;
 
     public int readyPlayers = 0;
@@ -70,7 +73,11 @@ public class GameManager : NetworkBehaviour {
         ResetReady();
 
         ui.UpdPlayerList(players);
+    }
 
+    public override void OnStartAuthority()
+    {
+        base.OnStartAuthority();
         // TODO nail with desync of OnStartClient and OnStartServer
         StartCoroutine(WaitAnd(() => {
             CmdStartMatch();
@@ -124,6 +131,7 @@ public class GameManager : NetworkBehaviour {
     {
         if (!ruler.CheckMatchForEnd())
         {
+            Debug.Log("a");
             RpcStartDecision();
             onEachPlayerReady = OnEachReady_Decision;
         }
@@ -195,14 +203,35 @@ public class GameManager : NetworkBehaviour {
 
     #endregion
 
-
-    // called on all clients
+    // Clinet side (TODO sort sides)
     public void Spawn(Vector3 spawnPos, Player player)
     {
+        // WARNING!! since PlayerAvater've became NetworkBehaviour
+        // that can occure sync problem: not considering at same obj on clients
+        // TODO!! TODO!
         var avatar = Instantiate(avatarPrefab) as PlayerAvatar;
 
         player.avatar = avatar; // TODO change linking logic?
         avatar.player = player; // or is it quite enough?
+
+        //AddAvatar(avatar, player.Nik);
+
+        // TODO wait for sync
+        //StartCoroutine(WaitAnd(() =>
+        //{
+        //avatar.gameObject.name = "PlayerAvatar " + player.Nik;
+        //CmdAssignAuthority(player.netId);
+        //},
+        //0.4f
+        //));
+
+        if (isServer)
+        {
+            NetworkServer.Spawn(avatar.gameObject);
+            avatar.GetComponent<NetworkIdentity>().AssignClientAuthority(player.connectionToClient);
+            
+        }
+        
 
         avatar.transform.position = spawnPos;
 
@@ -215,10 +244,63 @@ public class GameManager : NetworkBehaviour {
         player.loadout.Inflate(avatar, data);
     }
 
+    [Command]
+    public void CmdAssignAuthority(NetworkInstanceId instanceId)
+    {
+        var client = NetworkServer.FindLocalObject(instanceId).GetComponent<Player>();
+        var avatarIdentity = GameObject.Find("PlayerAvatar " + client.Nik)
+                                .GetComponent<NetworkIdentity>();
+        avatarIdentity.AssignClientAuthority(client.connectionToClient);
+    }
+
+    [Command]
+    public void CmdSpawn(Vector3 spawnPos, NetworkInstanceId instanceId)
+    {
+        var player = NetworkServer.FindLocalObject(instanceId).GetComponent<Player>();
+        var avatar = Instantiate(avatarPrefab);
+
+        NetworkServer.SpawnWithClientAuthority(
+            avatar.gameObject, player.gameObject);
+        
+        RpcInstantiateSpawned(spawnPos, instanceId, avatar.netId);
+    }
+
+    [ClientRpc]
+    public void RpcInstantiateSpawned(Vector3 spawnPos, NetworkInstanceId instanceId, NetworkInstanceId avatarInstanceId)
+    {
+        var player = ClientScene.FindLocalObject(instanceId).GetComponent<Player>();
+        var avatar = ClientScene.FindLocalObject(avatarInstanceId).GetComponent<PlayerAvatar>();
+
+        player.avatar = avatar; 
+        avatar.player = player;
+
+        avatar.transform.position = spawnPos;
+
+        // TODO apply settings
+        var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
+        renderer.materials[0].color = player.Color.ToColor();
+
+        player.loadout.Inflate(avatar, data);
+
+        player.isAlive = true;
+    }
+    
+
+    /*public void AddAvatar(PlayerAvatar avatar, string ownerNik)
+    {
+        foreach (var spawnedAvatar in avatars)
+            if (spawnedAvatar.player.Nik == ownerNik)
+                return; // already spawned by another client
+
+        avatars.Add(avatar);
+    }*/
+    
+
 
     [Serializable]
     public class UI
     {
+        public GameManager gameManager;
         public Text tx_log, tx_playerList;
         public RawImage img_SpawnPoint;
         public GameObject btn_ExitMatch;
@@ -245,8 +327,10 @@ public class GameManager : NetworkBehaviour {
             tx_playerList.text = "";
 
             foreach (var p in list)
-                tx_playerList.text += p.Nik + " ["
-                    + (p.isReady ? "R]\n" : "  ]\n");
+                tx_playerList.text += (gameManager.WePlayer == p ? "| " : " ")
+                    + p.Nik + " ["
+                    + (p.isReady ? "R]\n" : "  ] ")
+                    + (p.isAlive ? p.avatar.HP + "hp\n" : "\n");
         }
         
         [Obsolete("Use FloorCursor instead", true)]
@@ -286,11 +370,11 @@ public class GameManager : NetworkBehaviour {
 
         public void Hitmarker()
         {
-            animHitmarker.SetTrigger("hit");
+            animHitmarker.SetTrigger("hitmarker");
         }
         public void Killmarker()
         {
-            animHitmarker.SetTrigger("kill");
+            animHitmarker.SetTrigger("killmarker");
         }
 
 

@@ -39,6 +39,7 @@ GameObject:
   - component: {fileID: 114188389079314106}
   - component: {fileID: 54298527665074974}
   - component: {fileID: 135941690434525216}
+  - component: {fileID: 114517851002221824}
   m_Layer: 0
   m_Name: Player Avatar
   m_TagString: Player Avatar
@@ -217,6 +218,39 @@ MonoBehaviour:
   Radius: 10
   isTurning: 0
   isCommonTurning: 0
+  HP: 100
+--- !u!114 &114517851002221824
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1913283835586694}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 127
+    i1: 80
+    i2: 35
+    i3: 249
+    i4: 43
+    i5: 200
+    i6: 63
+    i7: 212
+    i8: 138
+    i9: 209
+    i10: 122
+    i11: 14
+    i12: 146
+    i13: 111
+    i14: 241
+    i15: 240
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 1
 --- !u!135 &135941690434525216
 SphereCollider:
   m_ObjectHideFlags: 1

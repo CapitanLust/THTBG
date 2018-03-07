@@ -120,6 +120,7 @@ public class PlayerAvatar : NetworkBehaviour {
     }
 
 
+    
     [Command]
     public void CmdGetDamage (float damage, string hitterNik, float successQ)
     {
@@ -131,21 +132,21 @@ public class PlayerAvatar : NetworkBehaviour {
             player.gameManager.CmdAwardKiller(hitterNik, successQ);
         }
     }
-
-    public void Die()
+    
+    [ClientRpc]
+    public void RpcDie()
     {
         player.isAlive = false;
         player.update = player.Update_Empty;
         // TODO anim
         Destroy(gameObject);
-    }
-    [ClientRpc]
-    public void RpcDie()
-    {
-        Die();
+
+        //Remove from avatars
     }
 
     // TODO sort voids
+
+    
 
 }
 
@@ -342,16 +343,16 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
         avatar.LookAt(Point);
 
         // TODO review this logic
-        if (!weaponHandler.ActionStarted)
-            weaponHandler.Shoot(Point, SuccesQuotient);
-        if (weaponHandler.ActionEnded)
+        if (!ActionStarted)
+            weaponHandler.Shoot(this);
+        if (ActionEnded)
         {
-            weaponHandler.ActionStarted = false;
-            weaponHandler.ActionEnded = false;
+            ActionStarted = false;
+            ActionEnded = false;
             return true;
         }
 
-        return false; ;
+        return false;
     }
 
 
@@ -423,16 +424,16 @@ public class WeaponAction_Reload : TurnAction
     public override bool Action()
     {
         // TODO review this logic
-        if (!weaponHandler.ActionStarted)
-            weaponHandler.Reload();
-        if (weaponHandler.ActionEnded)
+        if (!ActionStarted)
+            weaponHandler.Reload(this);
+        if (ActionEnded)
         {
-            weaponHandler.ActionStarted = false;
-            weaponHandler.ActionEnded = false;
+            ActionStarted = false;
+            ActionEnded = false;
             return true;
         }
 
-        return false; ;
+        return false; 
     }
 
     public override void SyncNonSync(Turn turn)

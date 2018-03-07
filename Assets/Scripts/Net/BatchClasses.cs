@@ -107,6 +107,10 @@ public abstract class TurnAction
 
     [NonSerialized]
     public bool Confirmed = false;
+    [NonSerialized]
+    public bool ActionStarted = false;
+    [NonSerialized]
+    public bool ActionEnded = false;
 
     float x = 0, y = 0, z = 0;
     public Vector3 Point

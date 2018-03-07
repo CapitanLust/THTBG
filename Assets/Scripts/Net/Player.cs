@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections;
 
 public class Player : NetworkBehaviour {
 
@@ -113,6 +114,16 @@ public class Player : NetworkBehaviour {
 
     #endregion
 
+    #region Playtrouhg other networking
+
+    //[Command]
+    //public void CmdAssignAvatar()
+    //{
+    //    avatar.GetComponent<NetworkIdentity>()
+    //        .AssignClientAuthority(connectionToClient);
+    //}
+
+    #endregion
 
     #region Playing
 
@@ -249,8 +260,24 @@ public class Player : NetworkBehaviour {
     }
 
 
+    [Command]
+    public void CmdSpawnAvatar(Vector3 point)
+    {
+        gameManager.CmdSpawn(point, netId);
+    }
+
+
     #endregion
 
+    /*#region functionsal connection with avatar (until avatar is mono)
+
+    [Command]
+    public void CmdGetDamage(float damage, string hitterNik, float successQ)
+    {
+        avatar.HP -= damage;
+    }
+    
+    #endregion*/
 
     public void OnStartMatch ()
     {
@@ -318,16 +345,35 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
             }
         }
     }
-
+    
     public override bool Action()
     {
-        Debug.Log("SpawnInfo: " + Point);
+        //if (!ActionStarted)
+        //{
+            Debug.Log("SpawnInfo: " + Point);
 
-        turn.Owner.gameManager.Spawn(Point, turn.Owner);
+            //turn.Owner.gameManager.Spawn(Point, turn.Owner);
+            if (turn.Owner.hasAuthority)
+                //turn.Owner.gameManager.CmdSpawn(Point, turn.Owner.netId);
+                turn.Owner.CmdSpawnAvatar(Point);
 
-        DisableFCursor();
+            /*turn.Owner.StartCoroutine(WaitAnd(() =>
+            {
+                ActionEnded = true;
+            }, 2));
 
-        return true; // TODO or GameManager.Spawn -> bool ?
+            ActionStarted = true;*/
+
+            DisableFCursor();
+        //}
+
+        //return ActionEnded; // TODO event
+        return true;
+    }
+    IEnumerator WaitAnd(Action whatNext, float awaitTime)
+    {
+        yield return new WaitForSeconds(awaitTime);
+        whatNext();
     }
 
     public override void SyncNonSync(Turn turn)

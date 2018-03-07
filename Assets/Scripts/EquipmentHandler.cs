@@ -5,8 +5,8 @@ using UnityEngine;
 
 public abstract class EquipmentHandler : MonoBehaviour
 {
-    public bool ActionStarted = false,
-                ActionEnded   = false;
+    //public bool ActionStarted = false,
+                //ActionEnded   = false;
 }
 
 public class WeaponHandler : EquipmentHandler
@@ -30,47 +30,48 @@ public class WeaponHandler : EquipmentHandler
     }
 
     // TODO change arguments to link to Turn
-    public virtual void Shoot(Vector3 point, float successQ)
+    public virtual void Shoot(TurnAction tAction /*Vector3 point, float successQ*/)
     {
-        ActionStarted = true;
+        tAction.ActionStarted = true;
         // (!!!) Temporary on WaitForSeconds
         // it will be on Animator in the future        
-        VisualShot(point);
+        VisualShot(tAction.Point);
         StartCoroutine(WaitAnd(
             () => {
-                ProcessShoot(point, successQ);
+                ProcessShoot(tAction);
             },
             .5f
         ));
             
     }
 
-    protected virtual void ProcessShoot(Vector3 point, float successQ)
+    protected virtual void ProcessShoot(TurnAction tAction)
     {
         if (CurMag > 0)
         {
             CurMag--;
             if(player.hasAuthority)
-                MeasureAftermath(point, successQ);
+                MeasureAftermath(tAction);
         }
 
-        ActionEnded = true;
+        tAction.ActionEnded = true;
     }
-    public virtual void MeasureAftermath(Vector3 point, float successQ)
+    public virtual void MeasureAftermath(TurnAction tAction)
     {
         foreach(var p in player.gameManager.players)
         {
-            // ray for check walls
+            // TODO foreach avatar
+            if (!p.isAlive) continue;
             // and TODO mask for breakable-thru walls
-            var difVector = p.avatar.transform.position - point;
+            var difVector = p.avatar.transform.position - tAction.Point;
             if (difVector.magnitude >= info.Radius + p.avatar.Radius)
                 continue;
 
-            var ray = new Ray(point, p.avatar.transform.position - point);
+            var ray = new Ray(tAction.Point, p.avatar.transform.position - tAction.Point);
             RaycastHit hit;
 
             if(Physics.Raycast(ray, out hit) && hit.collider.tag == "Player Avatar")
-                SendDamage( hit.collider.GetComponent<PlayerAvatar>(), successQ );
+                SendDamage( hit.collider.GetComponent<PlayerAvatar>(), tAction.SuccesQuotient );
         }
     }
 
@@ -82,9 +83,9 @@ public class WeaponHandler : EquipmentHandler
         player.ui.Hitmarker();
     }
 
-    public virtual void Reload() 
+    public virtual void Reload(TurnAction tAction) 
     {
-        ActionStarted = true;        
+        tAction.ActionStarted = true;        
         StartCoroutine(WaitAnd(
             () => {
                 if (CurMag != 0)
@@ -92,7 +93,7 @@ public class WeaponHandler : EquipmentHandler
                 else
                     CurMag = info.Mag;
 
-                ActionEnded = true;
+                tAction.ActionEnded = true;
             },
             info.ReloadTime
         ));
