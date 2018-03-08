@@ -28,7 +28,7 @@ public class GameManager : NetworkBehaviour {
 
     public bool IsMatchStarted = false;
 
-    public int readyPlayers = 0;
+    private int readyPlayers = 0;
 
     Action onEachPlayerReady;
 
@@ -100,12 +100,13 @@ public class GameManager : NetworkBehaviour {
     public void OnPlayerReady() // only on server
     {
         if ((++readyPlayers) == players.Count)
-            StartCoroutine( Cmn.AwaitAnd(() => {
+            StartCoroutine( WaitAnd(() => {
                 ResetReady();
                 onEachPlayerReady();
-            }));
-        // delay for await of turn sync
-        // TODO comment /\
+            }, .5f));
+
+        // TODO via callback
+        
     }
     
     void ResetReady()

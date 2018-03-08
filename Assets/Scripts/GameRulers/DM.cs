@@ -20,7 +20,7 @@ public class DM : GameRuler {
         foreach (var p in gameManager.players)
             if (p.isAlive) survived++;
 
-        return survived == 0; // for debug
+        //return survived == 0; // for debug
         return survived <= 1;
     }
     

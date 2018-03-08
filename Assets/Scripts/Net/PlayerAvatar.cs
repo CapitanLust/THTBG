@@ -115,8 +115,13 @@ public class PlayerAvatar : NetworkBehaviour, IInitialState {
             );
     }
 
+    [Command]
+    public void CmdSendDamage(NetworkInstanceId victimAvatarID, float damage, float successQ)
+    {
+        var victim = NetworkServer.FindLocalObject(victimAvatarID).GetComponent<PlayerAvatar>();
+        victim.CmdGetDamage(damage, player.Nik, successQ);
+    }
 
-    
     [Command]
     public void CmdGetDamage (float damage, string hitterNik, float successQ)
     {
@@ -356,14 +361,14 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
         // TODO review this logic
         if (!ActionStarted)
             weaponHandler.Shoot(this);
-        if (ActionEnded)
-        {
-            ActionStarted = false;
-            ActionEnded = false;
-            return true;
-        }
-
-        return false;
+        //if (ActionEnded)
+        //{
+            //ActionStarted = false;
+            //ActionEnded = false;
+            //return true;
+        //}
+        return ActionEnded;
+        //return false;
     }
 
 
