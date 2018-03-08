@@ -62,16 +62,25 @@ public class WeaponHandler : EquipmentHandler
         {
             // TODO foreach avatar
             if (!p.isAlive) continue;
+
             // and TODO mask for breakable-thru walls
             var difVector = p.avatar.transform.position - tAction.Point;
-            if (difVector.magnitude >= info.Radius + p.avatar.Radius)
+            Debug.Log("[");
+            Debug.Log(p.avatar.transform.position);
+            Debug.Log(tAction.Point);
+            Debug.Log(difVector.magnitude);
+            Debug.Log(info.Radius + p.avatar.Radius);
+            Debug.Log("]");
+            if (difVector.magnitude > info.Radius + p.avatar.Radius)
                 continue;
 
             var ray = new Ray(tAction.Point, p.avatar.transform.position - tAction.Point);
             RaycastHit hit;
 
-            if(Physics.Raycast(ray, out hit) && hit.collider.tag == "Player Avatar")
-                SendDamage( hit.collider.GetComponent<PlayerAvatar>(), tAction.SuccesQuotient );
+            if (Physics.Raycast(ray, out hit) && hit.collider.tag == "Player Avatar")
+                SendDamage(hit.collider.GetComponent<PlayerAvatar>(), tAction.SuccesQuotient);
+            else
+                Debug.Log("ne");
         }
     }
 
@@ -109,10 +118,13 @@ public class WeaponHandler : EquipmentHandler
     // TEMP:
     public void VisualShot(Vector3 point)
     {
-        anim.SetTrigger("Shoot");
+        if (CurMag > 0)
+        {
+            anim.SetTrigger("Shoot");
 
-        Instantiate<Transform>(bulletPrefab, bulletSpawn);
-        //newBull.Rotate() -- random spread or aimed to the victim avatar
+            Instantiate<Transform>(bulletPrefab, bulletSpawn);
+            //newBull.Rotate() -- random spread or aimed to the victim avatar
+        }
     }
 
 }

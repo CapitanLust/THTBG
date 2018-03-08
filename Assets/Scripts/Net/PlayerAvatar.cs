@@ -18,21 +18,31 @@ public class PlayerAvatar : NetworkBehaviour {
     public float HP = 100;
 
 
+    public Animator anim;
+    public Rigidbody rg;
+
     public void update() // notice that there's lowercase 'u'
     {               // bcse call goes from Player
         IterateTurn();
     }
 
+    public void Update()
+    { 
+        SyncWithAnimator();
+    }
+
+    public void SyncWithAnimator()
+    {
+        //anim.SetFloat("velocity", rg.velocity.magnitude);
+    }
+
     public void Move (Vector3 toward)
     {
         transform.position += toward * speed;
+        anim.SetFloat("velocity", speed);
+
         //LookAtDir(toward);
         LookAtDirSmooth(toward);
-    }
-
-    public void Combat (Vector3 point)
-    {
-        Debug.Log("Combat at: " + point);
     }
 
     // User Part
@@ -79,7 +89,6 @@ public class PlayerAvatar : NetworkBehaviour {
 
     public void ReturnToInitialTurnState()
     {
-        Debug.Log("asd" + player.turn.actions[0].Point);
         //transform.position = initialTurnPos;
         transform.position = player.turn.actions[0].Point; // definitely MoveAct. Def-ly with init pos
     }
@@ -118,6 +127,7 @@ public class PlayerAvatar : NetworkBehaviour {
     public void CmdGetDamage (float damage, string hitterNik, float successQ)
     {
         HP -= damage;
+        player.gameManager.ui.UpdPlayerList(player.gameManager.players);
 
         if (HP <= 0)
         {
@@ -129,12 +139,16 @@ public class PlayerAvatar : NetworkBehaviour {
     [ClientRpc]
     public void RpcDie()
     {
-        player.isAlive = false;
         player.update = player.Update_Empty;
-        // TODO anim
-        Destroy(gameObject);
-
+        player.isAlive = false;
+        player.avatar = null;
         //Remove from avatars
+
+        player.CmdSetReady();
+
+        GetComponent<Collider>().enabled = false;
+        anim.SetTrigger("death");
+
     }
 
     // TODO sort voids
@@ -174,21 +188,20 @@ public class MoveAction : TurnAction
         {
             avatar.Move(moveToward);
 
-            if (distanceDelta < 0.2f) 
+            if (distanceDelta < 0.14f) 
                 distanceDelta += moveToward.magnitude * avatar.speed; 
             else
             {
                 // Dump moveAct, add new one and relink inpHandler
                 Confirmed = true;
                 ChangeStateTo_NewMoveAct();
-
-                Debug.Log("added move");
+                
             }
             return;
         }
         else
         {
-            // if input type changed, switch to new action TODO
+            avatar.anim.SetFloat("velocity", 0); // temp in here
 
             if((Input.mousePosition - oldMousePos).magnitude > .002f)
             {
@@ -211,8 +224,6 @@ public class MoveAction : TurnAction
         turn.actions.Add(new MoveAction(turn));
         turn.actions.Add(new WeaponAction(turn));
         turn.Owner.SetInputHandlerOnLast();
-
-        Debug.Log("changed moveAct to weaponAct");
     }
 
     public override bool Action()
@@ -284,7 +295,7 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
                 weaponHandler.VisualShot(Point); // TODO and count mag?
                 weaponHandler.StartCoroutine(WaitAnd(() => 
                     {
-                        ChangeStateTo_MoveAction();
+                        ChangeStateTo_WeaponAct();
                     },
                     .5f
                 ));
@@ -311,16 +322,18 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
         DisableFCursor();
         turn.actions.Add(new MoveAction(turn));
         turn.Owner.SetInputHandlerOnLast();
+    }
 
-        Debug.Log("changed weapAct to moveAct");
+    void ChangeStateTo_WeaponAct()
+    {
+        turn.actions.Add(new WeaponAction(turn));
+        turn.Owner.SetInputHandlerOnLast();
     }
 
     void ChangeStateTo_Reload()
     {
         turn.actions.Add(new WeaponAction_Reload(turn));
         turn.Owner.SetInputHandlerOnLast();
-
-        Debug.Log("changed weapAct to moveReloadAct");
     }
 
 
@@ -354,8 +367,10 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
     public void ActivateFCursor()
     {
-        turn.Owner.ui.FloorCursor.transform.localScale
-            = new Vector3(weaponHandler.info.Radius, weaponHandler.info.Radius, 1);
+        if (turn.Performing) return;
+
+        turn.Owner.ui.FloorCursorAnch.localScale
+            = new Vector3(weaponHandler.info.Radius*2, 1, weaponHandler.info.Radius * 2);
         turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
         turn.Owner.ui.SetActiveOfFloorCursor(true);
     }
@@ -395,7 +410,7 @@ public class WeaponAction_Reload : TurnAction
         weaponHandler.StartCoroutine(WaitAnd(
             () => {
                 Confirmed = true;
-                ChangeStateTo_MoveAct();
+                ChangeStateTo_WeaponAct();
             },
             weaponHandler.info.ReloadTime
         ));
@@ -406,12 +421,10 @@ public class WeaponAction_Reload : TurnAction
         whatNext();
     }
 
-    void ChangeStateTo_MoveAct()
+    void ChangeStateTo_WeaponAct()
     {
-        turn.actions.Add(new MoveAction(turn));
+        turn.actions.Add(new WeaponAction(turn));
         turn.Owner.SetInputHandlerOnLast();
-
-        Debug.Log("changed weapReloadAct to moveAct");
     }
 
     public override bool Action()

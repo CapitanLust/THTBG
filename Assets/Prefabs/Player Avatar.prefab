@@ -40,6 +40,7 @@ GameObject:
   - component: {fileID: 54298527665074974}
   - component: {fileID: 135941690434525216}
   - component: {fileID: 114517851002221824}
+  - component: {fileID: 95019041836216894}
   m_Layer: 0
   m_Name: Player Avatar
   m_TagString: Player Avatar
@@ -202,6 +203,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!95 &95019041836216894
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1913283835586694}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 19fcd359ff1ce0b4c83ce16997556e95, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
 --- !u!114 &114188389079314106
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -215,10 +233,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 0}
   speed: 0.1
-  Radius: 10
+  Radius: 0.5
   isTurning: 0
   isCommonTurning: 0
   HP: 100
+  anim: {fileID: 95019041836216894}
+  rg: {fileID: 54298527665074974}
 --- !u!114 &114517851002221824
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -257,8 +277,8 @@ SphereCollider:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1913283835586694}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_Material: {fileID: 13400000, guid: 2541801f04ab0a242bce3cd0cd2baf95, type: 2}
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5

@@ -45,7 +45,10 @@ public class Turn
     [NonSerialized]
     public Player Owner;
 
+    [NonSerialized]
     public int actionsDid = 0;
+    [NonSerialized]
+    public bool Performing = false;
 
     public void Perform()
     {
@@ -111,6 +114,7 @@ public abstract class TurnAction
     public bool ActionStarted = false;
     [NonSerialized]
     public bool ActionEnded = false;
+    
 
     float x = 0, y = 0, z = 0;
     public Vector3 Point

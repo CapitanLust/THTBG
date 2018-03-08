@@ -16,12 +16,12 @@ public class DM : GameRuler {
 
     public override bool CheckMatchForEnd()
     {
-        return false;
-
         int survived = 0;
         foreach (var p in gameManager.players)
             if (p.isAlive) survived++;
-        return survived == 1;
+
+        return survived == 0; // for debug
+        return survived <= 1;
     }
     
 }

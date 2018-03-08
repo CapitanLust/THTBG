@@ -127,7 +127,6 @@ public class GameManager : NetworkBehaviour {
     {
         if (!ruler.CheckMatchForEnd())
         {
-            Debug.Log("a");
             RpcStartDecision();
             onEachPlayerReady = OnEachReady_Decision;
         }
@@ -198,31 +197,39 @@ public class GameManager : NetworkBehaviour {
 
     #endregion
 
-    // Clinet side (TODO sort sides)
-    public void Spawn(Vector3 spawnPos, Player player)
+
+    [Command]
+    public void CmdSpawn(Vector3 spawnPos, NetworkInstanceId instanceId)
     {
-        var avatar = Instantiate(avatarPrefab) as PlayerAvatar;
+        var player = NetworkServer.FindLocalObject(instanceId).GetComponent<Player>();
+        var avatar = Instantiate(avatarPrefab);
+
+        NetworkServer.SpawnWithClientAuthority(
+            avatar.gameObject, player.gameObject);
+
+        RpcInstantiateSpawned(spawnPos, instanceId, avatar.netId);
+    }
+
+    [ClientRpc]
+    public void RpcInstantiateSpawned(Vector3 spawnPos, NetworkInstanceId instanceId, NetworkInstanceId avatarInstanceId)
+    {
+        var player = ClientScene.FindLocalObject(instanceId).GetComponent<Player>();
+        var avatar = ClientScene.FindLocalObject(avatarInstanceId).GetComponent<PlayerAvatar>();
 
         player.avatar = avatar;
         avatar.player = player;
 
-        if (isServer)
-        {
-            NetworkServer.Spawn(avatar.gameObject);
-            avatar.GetComponent<NetworkIdentity>().AssignClientAuthority(player.connectionToClient);
-        }
-        
-
         avatar.transform.position = spawnPos;
 
-        player.isAlive = true;
-        
+        // TODO apply settings
         var renderer = avatar.transform.GetChild(0).GetComponent<Renderer>();
         renderer.materials[0].color = player.Color.ToColor();
 
         player.loadout.Inflate(avatar, data);
+
+        player.isAlive = true;
     }
-    
+
 
     /*public void AddAvatar(PlayerAvatar avatar, string ownerNik)
     {
@@ -232,7 +239,7 @@ public class GameManager : NetworkBehaviour {
 
         avatars.Add(avatar);
     }*/
-    
+
 
 
     [Serializable]
@@ -243,6 +250,7 @@ public class GameManager : NetworkBehaviour {
         public RawImage img_SpawnPoint;
         public GameObject btn_ExitMatch;
 
+        public Transform FloorCursorAnch;
         public SpriteRenderer FloorCursor;
 
         public Animator animHitmarker;
@@ -274,13 +282,12 @@ public class GameManager : NetworkBehaviour {
 
         public void SetFloorCursor (Vector3 pointOnFloor)
         {
-            FloorCursor.transform.position = pointOnFloor
-                + new Vector3(0f,0.01f,0f);
+            FloorCursorAnch.transform.position = pointOnFloor;
             // TODO rotation and apply Cursor of certain Equipment
         }
         public void SetActiveOfFloorCursor(bool active)
         {
-            FloorCursor.gameObject.SetActive(active);
+            FloorCursorAnch.gameObject.SetActive(active);
         }
         public void SetFloorCursorState(FloorCursorState state)
         {

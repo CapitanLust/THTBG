@@ -162,15 +162,14 @@ public class Player : NetworkBehaviour {
 
     public void Perform()
     {
-        Debug.Log("Performing: " + Nik);
-        ui.tx_log.text += "Performing " + Nik + "\n";
-
+        turn.Performing = true;
         update = Update_Game_Performance;
     }
 
     public void StartDecision()
     {
         turn.Clear(); // don't need on non-auth, but let it be just in case
+        turn.Performing = false;
 
         if (hasAuthority)
         {
@@ -216,12 +215,12 @@ public class Player : NetworkBehaviour {
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                // first, we need to disable upd performing
 
                 CmdSyncTurn(turn.Serialized);
                 CmdSetReady();
 
                 ReturnToInitialTurnState();
+                gameManager.ui.SetActiveOfFloorCursor(false);
             }
             else
             {
@@ -245,19 +244,11 @@ public class Player : NetworkBehaviour {
             isReady = true; // see comment \/ below // TODO check it
             if (hasAuthority)
                 CmdSetReady();
-
-            Debug.Log("Ended");
         }
     }
 
 
-    [Command]
-    public void CmdSpawnAvatar(Vector3 point)
-    {
-        gameManager.CmdSpawn(point, netId);
-    }
-
-
+    
     #endregion
 
     #region Playtrouhg other networking
@@ -335,7 +326,7 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
     public override bool Action()
     {
         if (turn.Owner.hasAuthority)
-            turn.Owner.CmdSpawnAvatar(Point);
+            turn.Owner.gameManager.CmdSpawn(Point, turn.Owner.netId);
 
         DisableFCursor();
 
@@ -353,6 +344,11 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
 
     public void ActivateFCursor()
     {
+        if (turn.Performing) return;
+
+        var diameter = turn.Owner.gameManager.avatarPrefab.Radius * 2;
+        turn.Owner.ui.FloorCursorAnch.localScale
+               = new Vector3(diameter, 1, diameter);
         turn.Owner.ui.SetFloorCursorState(GameManager.UI.FloorCursorState.Deciding);
         turn.Owner.ui.SetActiveOfFloorCursor(true);
     }
