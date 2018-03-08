@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 
-public class Player : NetworkBehaviour {
+public class Player : NetworkBehaviour, IInitialState {
 
     [SyncVar]
     public string Nik;
@@ -154,11 +154,6 @@ public class Player : NetworkBehaviour {
 
     }
 
-    public void ReturnToInitialTurnState()
-    {
-        if(isAlive)
-            avatar.ReturnToInitialTurnState();
-    }
 
     public void Perform()
     {
@@ -173,6 +168,8 @@ public class Player : NetworkBehaviour {
 
         if (hasAuthority)
         {
+            FixateState();
+
             if (isAlive)
                 turn.actions.Add(new MoveAction(turn));
             else       
@@ -247,7 +244,13 @@ public class Player : NetworkBehaviour {
         }
     }
 
-
+    [Command]
+    public void CmdCallSpawn(Vector3 point)
+    {
+        gameManager.CmdSpawn(point, netId);
+        // we need to go thru player first, to send command from server auth
+        // ( TurnAction -> Player(s) -> GameManager (s) )
+    }
     
     #endregion
 
@@ -266,10 +269,31 @@ public class Player : NetworkBehaviour {
 
 
     #region UI
-    
+
 
     #endregion
 
+    #region IInitialState implementation
+
+    public void FixateState()
+    {
+        if (isAlive)
+        {
+            avatar.FixateState();
+            loadout.FixateState();
+        }
+    }
+    
+    public void ReturnToInitialTurnState()
+    {
+        if (isAlive)
+        {
+            avatar.ReturnToInitialTurnState();
+            loadout.ReturnToInitialTurnState();
+        }
+    }
+
+    #endregion
 
 }
 
@@ -326,7 +350,7 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
     public override bool Action()
     {
         if (turn.Owner.hasAuthority)
-            turn.Owner.gameManager.CmdSpawn(Point, turn.Owner.netId);
+            turn.Owner.CmdCallSpawn(Point);
 
         DisableFCursor();
 

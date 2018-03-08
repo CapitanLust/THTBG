@@ -246,7 +246,8 @@ public class GameManager : NetworkBehaviour {
     public class UI
     {
         public GameManager gameManager;
-        public Text tx_log, tx_playerList;
+        public Text tx_log, tx_playerList,
+                    tx_weapon_ammo;
         public RawImage img_SpawnPoint;
         public GameObject btn_ExitMatch;
 
@@ -310,7 +311,10 @@ public class GameManager : NetworkBehaviour {
             animHitmarker.SetTrigger("killmarker");
         }
 
-
+        public void UpdateWeaponPanel_Ammo(WeaponHandler weaponHandler)
+        {
+            tx_weapon_ammo.text = weaponHandler.info.Name + ": " + weaponHandler.CurMag;
+        }
     }
 
 }

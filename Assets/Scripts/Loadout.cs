@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 [Serializable]
-public class Loadout
+public class Loadout    : IInitialState
 {
 
     [SyncVar]
@@ -31,5 +31,21 @@ public class Loadout
 
         WeaponHandler.Init( data.GetWeaponByName(WeaponName), avatar.player );
     }
+
+
+    #region IInitialState implementation
+
+    int fixedMag;
+
+    public void FixateState() 
+    {
+        fixedMag = WeaponHandler.CurMag;
+    }
+    public void ReturnToInitialTurnState()
+    {
+        WeaponHandler.CurMag = fixedMag;
+    }
+
+    #endregion
 
 }

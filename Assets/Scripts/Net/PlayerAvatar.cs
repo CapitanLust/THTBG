@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using System.Collections;
 
-public class PlayerAvatar : NetworkBehaviour {
+public class PlayerAvatar : NetworkBehaviour, IInitialState {
 
     public Player player;
 
@@ -87,12 +87,6 @@ public class PlayerAvatar : NetworkBehaviour {
         isCommonTurning = true;
     }
 
-    public void ReturnToInitialTurnState()
-    {
-        //transform.position = initialTurnPos;
-        transform.position = player.turn.actions[0].Point; // definitely MoveAct. Def-ly with init pos
-    }
-
 
     public void LookAt (Vector3 point)
     {
@@ -153,7 +147,17 @@ public class PlayerAvatar : NetworkBehaviour {
 
     // TODO sort voids
 
-    
+
+    #region IInitialState implementation
+
+    public void FixateState() { }
+    public void ReturnToInitialTurnState()
+    {
+        transform.position = player.turn.actions[0].Point; // definitely MoveAct. Def-ly with init pos
+    }
+
+    #endregion
+
 
 }
 
@@ -240,7 +244,7 @@ public class MoveAction : TurnAction
         this.turn = turn;
         avatar = turn.Owner.avatar;
     }
-    
+
 }
 
 
@@ -292,7 +296,8 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
                 // temp wait TODO
                 can = false; // TODO commonize (forgot that word)
-                weaponHandler.VisualShot(Point); // TODO and count mag?
+
+                weaponHandler.Shoot(this);
                 weaponHandler.StartCoroutine(WaitAnd(() => 
                     {
                         ChangeStateTo_WeaponAct();
@@ -389,6 +394,7 @@ public class WeaponAction : TurnAction, IUsingFloorCursor
 
     #endregion
 
+
 }
 
 [Serializable]
@@ -407,6 +413,7 @@ public class WeaponAction_Reload : TurnAction
         // + measure success Q, that will be affect on time of reload TODO
 
         // temp:
+        weaponHandler.Reload(this);
         weaponHandler.StartCoroutine(WaitAnd(
             () => {
                 Confirmed = true;
@@ -432,14 +439,14 @@ public class WeaponAction_Reload : TurnAction
         // TODO review this logic
         if (!ActionStarted)
             weaponHandler.Reload(this);
-        if (ActionEnded)
-        {
-            ActionStarted = false;
-            ActionEnded = false;
-            return true;
-        }
+        //if (ActionEnded)
+        //{                                 no need after true
+        //    ActionStarted = false;
+        //    ActionEnded = false;
+        //    return true;
+        //}
 
-        return false; 
+        return ActionEnded; 
     }
 
     public override void SyncNonSync(Turn turn)

@@ -13,7 +13,16 @@ public class WeaponHandler : EquipmentHandler
 {
     public Weapon info;
 
-    public int CurMag;
+    public int curMag;
+    public int CurMag
+    {
+        get { return curMag; }
+        set
+        {
+            curMag = value;
+            player.ui.UpdateWeaponPanel_Ammo(this);
+        }
+    }
 
     public Animator anim;
     public Transform bulletPrefab, 
@@ -23,10 +32,10 @@ public class WeaponHandler : EquipmentHandler
     
     public void Init(Weapon info, Player player)
     {
+        this.player = player;
+
         this.info = info;
         CurMag = info.Mag;
-
-        this.player = player;
     }
 
     // TODO change arguments to link to Turn
@@ -34,25 +43,33 @@ public class WeaponHandler : EquipmentHandler
     {
         tAction.ActionStarted = true;
         // (!!!) Temporary on WaitForSeconds
-        // it will be on Animator in the future        
-        VisualShot(tAction.Point);
-        StartCoroutine(WaitAnd(
-            () => {
-                ProcessShoot(tAction);
-            },
-            .5f
-        ));
+        // it will be on Animator in the future
+
+        if (CurMag > 0)
+        {
+            VisualShot(tAction.Point);
+            CurMag--;
+
+            if (tAction.turn.Performing)
+                StartCoroutine(WaitAnd(() =>
+                    {
+                        ProcessShoot(tAction);
+                    },
+                    .5f
+                ));
+        }
+        else
+            StartCoroutine(WaitAnd(() => {
+                tAction.ActionEnded = true;
+            }, .4f ));
+        // TODO else *click*
             
     }
 
     protected virtual void ProcessShoot(TurnAction tAction)
     {
-        if (CurMag > 0)
-        {
-            CurMag--;
-            if(player.hasAuthority)
-                MeasureAftermath(tAction);
-        }
+        if(player.hasAuthority)
+            MeasureAftermath(tAction);
 
         tAction.ActionEnded = true;
     }
@@ -65,12 +82,6 @@ public class WeaponHandler : EquipmentHandler
 
             // and TODO mask for breakable-thru walls
             var difVector = p.avatar.transform.position - tAction.Point;
-            Debug.Log("[");
-            Debug.Log(p.avatar.transform.position);
-            Debug.Log(tAction.Point);
-            Debug.Log(difVector.magnitude);
-            Debug.Log(info.Radius + p.avatar.Radius);
-            Debug.Log("]");
             if (difVector.magnitude > info.Radius + p.avatar.Radius)
                 continue;
 
@@ -118,13 +129,10 @@ public class WeaponHandler : EquipmentHandler
     // TEMP:
     public void VisualShot(Vector3 point)
     {
-        if (CurMag > 0)
-        {
-            anim.SetTrigger("Shoot");
+        anim.SetTrigger("Shoot");
 
-            Instantiate<Transform>(bulletPrefab, bulletSpawn);
-            //newBull.Rotate() -- random spread or aimed to the victim avatar
-        }
+        Instantiate<Transform>(bulletPrefab, bulletSpawn);
+        //newBull.Rotate() -- random spread or aimed to the victim avatar
     }
 
 }
