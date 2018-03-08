@@ -140,6 +140,7 @@ public class PlayerAvatar : NetworkBehaviour, IInitialState {
     {
         player.update = player.Update_Empty;
         player.isAlive = false;
+        player.isDead = true;
         player.avatar = null;
         //Remove from avatars
 

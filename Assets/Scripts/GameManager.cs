@@ -28,7 +28,7 @@ public class GameManager : NetworkBehaviour {
 
     public bool IsMatchStarted = false;
 
-    private int readyPlayers = 0;
+    public int readyPlayers = 0;
 
     Action onEachPlayerReady;
 
@@ -99,7 +99,7 @@ public class GameManager : NetworkBehaviour {
 
     public void OnPlayerReady() // only on server
     {
-        if ((++readyPlayers) == players.Count)
+        if ((++readyPlayers) == ruler.CountOfNotDead)
             StartCoroutine( WaitAnd(() => {
                 ResetReady();
                 onEachPlayerReady();
@@ -183,7 +183,7 @@ public class GameManager : NetworkBehaviour {
         // temp score summary
         ui.tx_playerList.text = "Match ended\n";
         foreach (var p in players)
-            ui.tx_playerList.text += p.Nik + " " + p.XP + "xp";
+            ui.tx_playerList.text += p.Nik + "  " + p.XP + "xp\n";
     }
 
     [Command]
@@ -275,9 +275,9 @@ public class GameManager : NetworkBehaviour {
             tx_playerList.text = "";
 
             foreach (var p in list)
-                tx_playerList.text += (gameManager.WePlayer == p ? "| " : " ")
+                tx_playerList.text += (gameManager.WePlayer == p ? "| " : "  ")
                     + p.Nik + " ["
-                    + (p.isReady ? "R]\n" : "  ] ")
+                    + (p.isReady ? "R] " : "  ] ")
                     + (p.isAlive ? p.avatar.HP + "hp\n" : "\n");
         }
         

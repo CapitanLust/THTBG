@@ -8,6 +8,16 @@ public abstract class GameRuler : MonoBehaviour {
 
     public bool FriendlyFire = false;
 
+    public int CountOfNotDead
+    {
+        get
+        {
+            int c = 0;
+            foreach (var p in gameManager.players)
+                if (!p.isDead) c++;
+            return c;
+        }
+    }
 
     public GameManager gameManager;
 

@@ -22,6 +22,7 @@ public class Player : NetworkBehaviour, IInitialState {
     public bool ReadyToRegistrate = false;
 
     [SyncVar] public bool isAlive = false;
+    [SyncVar] public bool isDead = false; // seems similar with isAlive. But isDead -- is only after Avatar's Death
     [SyncVar(hook = "OnIsReadyChanged")]
     public bool isReady = false;
 
@@ -237,11 +238,8 @@ public class Player : NetworkBehaviour, IInitialState {
     public void Update_Game_Performance()
     {
         if (!isReady && turn.Iterate())
-        {
-            isReady = true; // see comment \/ below // TODO check it
             if (hasAuthority)
                 CmdSetReady();
-        }
     }
 
     [Command]
@@ -341,8 +339,6 @@ public class SpawnAction : TurnAction, IUsingFloorCursor
             {
                 setted = false;
                 ChangeFCursotState(GameManager.UI.FloorCursorState.Deciding);
-
-                Confirmed = false;
             }
         }
     }
