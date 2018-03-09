@@ -25,6 +25,7 @@ public class Player : NetworkBehaviour, IInitialState {
     [SyncVar] public bool isDead = false; // seems similar with isAlive. But isDead -- is only after Avatar's Death
     [SyncVar(hook = "OnIsReadyChanged")]
     public bool isReady = false;
+    public bool localUpdReady = false; // for stop performing update before server sync isReady
 
     public Turn turn = new Turn();
 
@@ -124,8 +125,7 @@ public class Player : NetworkBehaviour, IInitialState {
     /// <summary>
     /// that one -- is ready-call from decision
     /// </summary>
-    /// <param name="serializedTurn"></param>
-    [Command] // server side
+    [Command(channel = 0)] // server side
     public void CmdSetReady()
     {
         isReady = true;
@@ -137,14 +137,14 @@ public class Player : NetworkBehaviour, IInitialState {
         ui.UpdPlayerList(gameManager.players);
     }
 
-    [Command]
+    [Command(channel = 0)]
     public void CmdSyncTurn(byte[] serializedTurn)
     {
         RpcSyncTurn(serializedTurn);
     }
     
     
-    [ClientRpc]
+    [ClientRpc(channel = 0)]
     public void RpcSyncTurn(byte[] barray)
     {
         turn = Turn.Deserialize(barray) as Turn;
@@ -159,6 +159,7 @@ public class Player : NetworkBehaviour, IInitialState {
     public void Perform()
     {
         turn.Performing = true;
+        localUpdReady = false;
         update = Update_Game_Performance;
     }
 
@@ -174,7 +175,7 @@ public class Player : NetworkBehaviour, IInitialState {
             if (isAlive)
                 turn.actions.Add(new MoveAction(turn));
             else       
-                if(gameManager.ruler.CanRevive())
+                if(gameManager.ruler.CanRevive(this))
                     turn.actions.Add(new SpawnAction(turn));
 
             inputHandler = turn.actions[0].InputHandler;
@@ -213,12 +214,12 @@ public class Player : NetworkBehaviour, IInitialState {
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-
                 CmdSyncTurn(turn.Serialized);
-                CmdSetReady();
 
                 ReturnToInitialTurnState();
                 gameManager.ui.SetActiveOfFloorCursor(false);
+
+                CmdSetReady();
             }
             else
             {
@@ -237,9 +238,12 @@ public class Player : NetworkBehaviour, IInitialState {
     }
     public void Update_Game_Performance()
     {
-        if (!isReady && turn.Iterate())
+        if (!localUpdReady && !isReady && turn.Iterate())
+        {
+            localUpdReady = true;
             if (hasAuthority)
                 CmdSetReady();
+        }
     }
 
     [Command]

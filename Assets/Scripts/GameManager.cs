@@ -21,12 +21,13 @@ public class GameManager : NetworkBehaviour {
     public GameRuler ruler; 
 
     public List<Player> players;
-    public Player WePlayer; 
+    public Player WePlayer;
 
     //public List<PlayerAvatar> avatars; TODO
     //public PlayerAvatar WeAvatar;
 
-    public bool IsMatchStarted = false;
+    public bool IsMatchStarted = false,
+                Performing = false;
 
     public int readyPlayers = 0;
 
@@ -99,14 +100,36 @@ public class GameManager : NetworkBehaviour {
 
     public void OnPlayerReady() // only on server
     {
-        if ((++readyPlayers) == ruler.CountOfNotDead)
+        var curState = Performing;
+
+        if ((++readyPlayers) >= ruler.CountOfPendingPlayers)
             StartCoroutine( WaitAnd(() => {
-                ResetReady();
-                onEachPlayerReady();
+                if (curState != Performing) return;
+                ChangePerformingState();
             }, .5f));
 
-        // TODO via callback
-        
+        // TODO via callback        
+    }
+
+    void ChangePerformingState()
+    {
+        ResetReady();
+        Performing = !Performing;
+        onEachPlayerReady();
+    }
+
+    public void CheckPlayersReady()
+    {
+        var curState = Performing;
+
+        if ((readyPlayers) >= ruler.CountOfPendingPlayers)
+            StartCoroutine(WaitAnd(() => {
+                // if action already started
+                if (curState != Performing) return;
+
+                ChangePerformingState();
+            }, 
+            .5f));
     }
     
     void ResetReady()
@@ -128,8 +151,8 @@ public class GameManager : NetworkBehaviour {
     {
         if (!ruler.CheckMatchForEnd())
         {
-            RpcStartDecision();
             onEachPlayerReady = OnEachReady_Decision;
+            RpcStartDecision();
         }
         else
             EndMatch();
@@ -139,14 +162,16 @@ public class GameManager : NetworkBehaviour {
     public void RpcPerform() // on each client
     {
         foreach (var p in players)
-            p.Perform();
+            if(!p.isDead || ruler.CanRevive(p))
+                p.Perform();
     }
     [ClientRpc]
     public void RpcStartDecision() // on each client
     {
 
         foreach (var p in players)
-            p.StartDecision();
+            if (!p.isDead || ruler.CanRevive(p))
+                p.StartDecision();
 
     }
 
@@ -264,9 +289,11 @@ public class GameManager : NetworkBehaviour {
             /// <summary> Color of sprite-cursor on the floor,
             /// that appear when we're deciding point </summary>
             public Color Decision;
-            /// <summary> Color of sprite-cursor when we've select and we are ready </summary>
+            /// <summary> Color of sprite-cursor when 
+            /// we've select and we are ready </summary>
             public Color Setted;
-            /// <summary> Color of sprite-cursor when we've point to place where we can't do Action </summary>
+            /// <summary> Color of sprite-cursor when we've 
+            /// point to place where we can't do Action </summary>
             public Color Unavailable;
         }
 
@@ -295,9 +322,12 @@ public class GameManager : NetworkBehaviour {
         {
             switch (state)
             {
-                case FloorCursorState.Deciding: FloorCursor.color = floorCursorColors.Decision; break;
-                case FloorCursorState.Setted: FloorCursor.color = floorCursorColors.Setted; break;
-                case FloorCursorState.Unavailable: FloorCursor.color = floorCursorColors.Unavailable; break;
+                case FloorCursorState.Deciding: FloorCursor.color 
+                        = floorCursorColors.Decision; break;
+                case FloorCursorState.Setted: FloorCursor.color 
+                        = floorCursorColors.Setted; break;
+                case FloorCursorState.Unavailable: FloorCursor.color
+                        = floorCursorColors.Unavailable; break;
             }
         }
         public enum FloorCursorState { Deciding, Setted, Unavailable };

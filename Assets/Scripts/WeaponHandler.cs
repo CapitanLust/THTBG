@@ -13,7 +13,9 @@ public class WeaponHandler : EquipmentHandler
         set
         {
             curMag = value;
-            player.ui.UpdateWeaponPanel_Ammo(this);
+
+            if(player.hasAuthority) // TODO check performance
+                player.ui.UpdateWeaponPanel_Ammo(this);
         }
     }
 

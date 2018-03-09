@@ -126,25 +126,36 @@ public class PlayerAvatar : NetworkBehaviour, IInitialState {
     public void CmdGetDamage (float damage, string hitterNik, float successQ)
     {
         HP -= damage;
-        player.gameManager.ui.UpdPlayerList(player.gameManager.players);
+        RpcUpdList();
 
         if (HP <= 0)
         {
+            if (player.gameManager.ruler.CanRevive(player))
+                player.CmdSetReady();
+
+            player.gameManager.CheckPlayersReady(); // if player dies after all is ready
+
             RpcDie();
+
             player.gameManager.CmdAwardKiller(hitterNik, successQ);
         }
+    }
+    [ClientRpc]
+    public void RpcUpdList()
+    {
+        player.gameManager.ui.UpdPlayerList(player.gameManager.players);
     }
     
     [ClientRpc]
     public void RpcDie()
     {
-        player.update = player.Update_Empty;
+        player.update = player.Update_Empty;        
+
         player.isAlive = false;
         player.isDead = true;
         player.avatar = null;
         //Remove from avatars
 
-        player.CmdSetReady();
 
         GetComponent<Collider>().enabled = false;
         anim.SetTrigger("death");

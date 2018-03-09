@@ -5,13 +5,9 @@ using UnityEngine;
 [Serializable]
 public class DM : GameRuler {
 
-    bool firstSpawn = false;
-
-    public override bool CanRevive()
+    public override bool CanRevive(Player p)
     {
-        if(!firstSpawn)
-            return firstSpawn = true;
-        return false;
+        return !p.isDead;
     }
 
     public override bool CheckMatchForEnd()
@@ -20,7 +16,7 @@ public class DM : GameRuler {
         foreach (var p in gameManager.players)
             if (p.isAlive) survived++;
 
-        //return survived == 0; // for debug
+        return survived == 0; // for debug
         return survived <= 1;
     }
     

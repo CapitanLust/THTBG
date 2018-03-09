@@ -14,6 +14,8 @@ public class Menu : MonoBehaviour {
 
     void Start()
     {
+        netManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
+
         // for debug
         ui.sl_PlayerColor.value = UnityEngine.Random.Range(0, 5);
         ui.inp_Nik.text = "d-" + UnityEngine.Random.Range(100, 999);

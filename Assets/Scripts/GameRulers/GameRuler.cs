@@ -6,9 +6,13 @@ using UnityEngine;
                                 // Strange idea, but so emplemented in Unity's Tanks
 public abstract class GameRuler : MonoBehaviour {
 
+    #region Linking var-s
+    public GameManager gameManager;
+    #endregion
+
     public bool FriendlyFire = false;
 
-    public int CountOfNotDead
+    public virtual int CountOfPendingPlayers
     {
         get
         {
@@ -18,8 +22,6 @@ public abstract class GameRuler : MonoBehaviour {
             return c;
         }
     }
-
-    public GameManager gameManager;
 
     public virtual bool CheckMatchForEnd()
     {
@@ -31,6 +33,6 @@ public abstract class GameRuler : MonoBehaviour {
         return true;
     }
 
-    public virtual bool CanRevive() { return false; }
+    public virtual bool CanRevive(Player p) { return false; }
 
 }
