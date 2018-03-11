@@ -2497,6 +2497,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   netManager: {fileID: 0}
+  lobby: {fileID: 0}
   ui:
     inp_Nik: {fileID: 1332544085}
     inp_ip: {fileID: 1180343448}

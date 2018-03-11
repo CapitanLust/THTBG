@@ -5,14 +5,15 @@ using UnityEngine.SceneManagement;
 
 public class Preload : MonoBehaviour {
 
-    public GameObject preloadData, netManager;
+    public GameObject[] objectsToNotDestroy;
+    public string sceneToLoad;
 
     public void Start()
     {
-        DontDestroyOnLoad(preloadData);
-        DontDestroyOnLoad(netManager);
+        foreach(var go in objectsToNotDestroy)
+            DontDestroyOnLoad(go);
 
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(sceneToLoad);
     }
 
 }

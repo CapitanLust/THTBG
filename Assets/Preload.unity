@@ -139,8 +139,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb6b54a1b1f42b44d9f4f41c034d5e55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  preloadData: {fileID: 1610566427}
-  netManager: {fileID: 1661914891}
+  objectsToNotDestroy:
+  - {fileID: 1610566427}
+  - {fileID: 1661914891}
+  sceneToLoad: Menu
 --- !u!4 &517500323
 Transform:
   m_ObjectHideFlags: 0
@@ -152,7 +154,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1610566427
 GameObject:
@@ -199,7 +201,7 @@ MonoBehaviour:
     Name: Grach
     Diffusing: 0
     AreaSizeDependsOnDistance: 0
-    Damage: 15
+    Damage: 50
     Mag: 8
     ReloadTime: 2
   - Radius: 3.2
@@ -320,5 +322,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
