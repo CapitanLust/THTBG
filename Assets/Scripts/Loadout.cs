@@ -39,11 +39,11 @@ public class Loadout    : IInitialState
 
     public void FixateState() 
     {
-        fixedMag = WeaponHandler.CurMag;
+        fixedMag = WeaponHandler.CurAmmo;
     }
     public void ReturnToInitialTurnState()
     {
-        WeaponHandler.CurMag = fixedMag;
+        WeaponHandler.CurAmmo = fixedMag;
     }
 
     #endregion

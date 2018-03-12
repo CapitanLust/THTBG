@@ -46,7 +46,7 @@ public class GameManager : NetworkBehaviour {
         data = GameObject.Find("Data").GetComponent<Data>();
 
         lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
-        networkManager = NetworkManager.s_Instance;
+        networkManager = lobby.netManager;
 
         onEachPlayerReady = OnEachReady_Decision;
 
@@ -178,7 +178,7 @@ public class GameManager : NetworkBehaviour {
 
     public void ExitMatch()
     {
-        networkManager.ServerChangeScene("Lobby");
+
     }
 
     
@@ -194,9 +194,12 @@ public class GameManager : NetworkBehaviour {
         RpcOnEndMatch();
         ui.btn_ExitMatch.SetActive(true);
     }
-
     [ClientRpc]
     public void RpcOnEndMatch()
+    {
+        OnEndMatch();
+    }
+    public void OnEndMatch()
     {
         IsMatchStarted = false;
         foreach (var p in players)
@@ -341,7 +344,7 @@ public class GameManager : NetworkBehaviour {
 
         public void UpdateWeaponPanel_Ammo(WeaponHandler weaponHandler)
         {
-            tx_weapon_ammo.text = weaponHandler.info.Name + ": " + weaponHandler.CurMag;
+            tx_weapon_ammo.text = weaponHandler.info.Name + ": " + weaponHandler.CurAmmo;
         }
     }
 

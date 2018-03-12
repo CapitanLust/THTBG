@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 
 public class NetworkManager : UnityEngine.Networking.NetworkManager {
 
+    //public List<Player> players = new List<Player>();
+
     public Action<NetworkConnection> onPlayerAdded;
 
     #region Handling singleton
