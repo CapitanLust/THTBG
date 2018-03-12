@@ -5,10 +5,11 @@ using UnityEngine;
 [Serializable]
 public class Equipment // : ScriptableObject // not anymore
 {
+    public string Name;
+    public float Area;
+    public float Distance;
 
     public float Radius;
-
-    public string Name;
 
     /// <summary>
     /// variable responsible for: is
@@ -16,9 +17,7 @@ public class Equipment // : ScriptableObject // not anymore
     /// on a distance to subject
     /// </summary>
     public bool Diffusing = false;
-
     public bool AreaSizeDependsOnDistance = false;
-
     // TODO to have own cursor
 }
 
@@ -26,8 +25,8 @@ public class Equipment // : ScriptableObject // not anymore
 [Serializable]
 public class Weapon : Equipment
 {
-    public float Damage;
-    public int Mag;
+    public int Damage;
+    public int Ammo;
     public float ReloadTime; // TODO it just for info. Time will be counted in animations
 }
 
@@ -35,5 +34,7 @@ public class Weapon : Equipment
 [Serializable]
 public class Gadget : Equipment
 {
+    public float Effect;
+    public int Turns;
 }
 

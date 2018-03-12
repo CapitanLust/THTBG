@@ -6,13 +6,13 @@ public class WeaponHandler : EquipmentHandler
 {
     public Weapon info;
 
-    public int curMag;
-    public int CurMag
+    public int curAmmo;
+    public int CurAmmo
     {
-        get { return curMag; }
+        get { return curAmmo; }
         set
         {
-            curMag = value;
+            curAmmo = value;
 
             if(player.hasAuthority) // TODO check performance
                 player.ui.UpdateWeaponPanel_Ammo(this);
@@ -30,7 +30,7 @@ public class WeaponHandler : EquipmentHandler
         this.player = player;
 
         this.info = info;
-        CurMag = info.Mag;
+        CurAmmo = info.Ammo;
     }
 
     // TODO change arguments to link to Turn
@@ -40,10 +40,10 @@ public class WeaponHandler : EquipmentHandler
         // (!!!) Temporary on WaitForSeconds
         // it will be on Animator in the future
 
-        if (CurMag > 0)
+        if (CurAmmo > 0)
         {
             VisualShot(tAction.Point);
-            CurMag--;
+            CurAmmo--;
 
             if (tAction.turn.Performing)
                 StartCoroutine(WaitAnd(() =>
@@ -106,10 +106,10 @@ public class WeaponHandler : EquipmentHandler
         tAction.ActionStarted = true;
         StartCoroutine(WaitAnd(
             () => {
-                if (CurMag != 0)
-                    CurMag = info.Mag + 1;
+                if (CurAmmo != 0)
+                    CurAmmo = info.Ammo + 1;
                 else
-                    CurMag = info.Mag;
+                    CurAmmo = info.Ammo;
 
                 tAction.ActionEnded = true;
             },
