@@ -19,11 +19,16 @@ public class WeaponHandler : EquipmentHandler
         }
     }
 
-    public Animator anim;
+    public Animator anim,
+                    animAvatar;
     public Transform bulletPrefab,
                      bulletSpawn;
 
     public Player player;
+
+    public Action onShoted, onReloaded;
+
+    TurnAction tAction;
 
     public void Init(Weapon info, Player player)
     {
@@ -31,44 +36,49 @@ public class WeaponHandler : EquipmentHandler
 
         this.info = info;
         CurAmmo = info.Ammo;
+
+        animAvatar = player.avatar.anim;
+    }
+
+    public void Shoot(TurnAction tAction, Action callback)
+    {
+        onShoted = callback;
+        Shoot(tAction);
     }
 
     // TODO change arguments to link to Turn
     public virtual void Shoot(TurnAction tAction /*Vector3 point, float successQ*/)
     {
+        this.tAction = tAction;
+
         tAction.ActionStarted = true;
-        // (!!!) Temporary on WaitForSeconds
-        // it will be on Animator in the future
 
         if (CurAmmo > 0)
         {
             VisualShot(tAction.Point);
             CurAmmo--;
 
-            if (tAction.turn.Performing)
-                StartCoroutine(WaitAnd(() =>
-                {
-                    ProcessShoot(tAction);
-                },
-                    .5f
-                ));
+            // Next -- Anim_OnShoted
         }
         else
             StartCoroutine(WaitAnd(() => {
                 tAction.ActionEnded = true;
+                if (onShoted != null)
+                    onShoted();
             }, .4f));
         // TODO else *click*
 
     }
 
-    protected virtual void ProcessShoot(TurnAction tAction)
+    protected virtual void ProcessShoot()
     {
         if (player.hasAuthority)
-            MeasureAftermath(tAction);
+            MeasureAftermath();
 
         tAction.ActionEnded = true;
     }
-    public virtual void MeasureAftermath(TurnAction tAction)
+
+    public virtual void MeasureAftermath()
     {
         foreach (var p in player.gameManager.players)
         {
@@ -101,20 +111,22 @@ public class WeaponHandler : EquipmentHandler
         player.ui.Hitmarker();
     }
 
+
+    public void Reload(TurnAction tAction, Action callback)
+    {
+        onReloaded = callback;
+        Reload(tAction);
+    }
+
     public virtual void Reload(TurnAction tAction)
     {
-        tAction.ActionStarted = true;
-        StartCoroutine(WaitAnd(
-            () => {
-                if (CurAmmo != 0)
-                    CurAmmo = info.Ammo + 1;
-                else
-                    CurAmmo = info.Ammo;
+        this.tAction = tAction;
 
-                tAction.ActionEnded = true;
-            },
-            info.ReloadTime
-        ));
+        tAction.ActionStarted = true;
+        anim.SetTrigger("Reload");
+        animAvatar.SetTrigger("Reload");
+
+        // Next -- Anim_OnReloaded
     }
 
     IEnumerator WaitAnd(Action whatNext, float awaitTime)
@@ -128,9 +140,37 @@ public class WeaponHandler : EquipmentHandler
     public void VisualShot(Vector3 point)
     {
         anim.SetTrigger("Shoot");
+        animAvatar.SetTrigger("Shoot");
 
-        Instantiate<Transform>(bulletPrefab, bulletSpawn);
+        var newBull = Instantiate(bulletPrefab, bulletSpawn);
+        newBull.SetParent(null);
         //newBull.Rotate() -- random spread or aimed to the victim avatar
+    }
+
+    public void Anim_OnShoted()
+    {
+        if (tAction.turn.Performing)
+            ProcessShoot();
+        else
+            tAction.ActionEnded = true;
+
+
+        if (onShoted != null)
+            onShoted();
+    }
+
+    public void Anim_OnReloaded()
+    {
+        if (CurAmmo != 0)
+            CurAmmo = info.Ammo + 1;
+        else
+            CurAmmo = info.Ammo;
+
+        tAction.ActionEnded = true;
+
+
+        if (onReloaded != null)
+            onReloaded();
     }
 
 }

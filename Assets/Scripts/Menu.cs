@@ -14,7 +14,7 @@ public class Menu : MonoBehaviour {
 
     void Start()
     {
-        //netManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
+        netManager = GameObject.Find("Network Manager").GetComponent<NetworkManager>();
 
         // for debug
         ui.sl_PlayerColor.value = UnityEngine.Random.Range(0, 5);
@@ -22,7 +22,6 @@ public class Menu : MonoBehaviour {
 
         OnInpNikChanged(); OnSliderColorChanged(); // forced calls
         OnDropDownWeaponChanged();
-
     }
 
     public void Create()

@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!319 &31900000
+AvatarMask:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: Avatar_Gra4
+  m_Mask: 00000000000000000100000000000000000000000100000001000000010000000100000000000000000000000000000000000000
+  m_Elements:
+  - m_Path: 
+    m_Weight: 1
+  - m_Path: Armature
+    m_Weight: 0
+  - m_Path: Armature/Body
+    m_Weight: 0
+  - m_Path: Armature/Body/Bone
+    m_Weight: 0
+  - m_Path: Armature/Body/Bone/Thigh_R
+    m_Weight: 0
+  - m_Path: Armature/Body/Bone/Thigh_R/Leg_R
+    m_Weight: 0
+  - m_Path: Armature/Body/Bone/Thigh_R/Leg_R/Foot_R
+    m_Weight: 0
+  - m_Path: Armature/Body/Chest
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Neck
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_L
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_L/Arm_l
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_L/Arm_l/Forearm_l
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_L/Arm_l/Forearm_l/Fist_l
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_R
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_R/Arm_r
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_R/Arm_r/Forearm_r
+    m_Weight: 1
+  - m_Path: Armature/Body/Chest/Shoulder_R/Arm_r/Forearm_r/Fist_r
+    m_Weight: 1
+  - m_Path: Armature/Body/Llium_L
+    m_Weight: 0
+  - m_Path: Armature/Body/Llium_L/Thigh_L
+    m_Weight: 0
+  - m_Path: Armature/Body/Llium_L/Thigh_L/Leg_L
+    m_Weight: 0
+  - m_Path: Armature/Body/Llium_L/Thigh_L/Leg_L/Foot_L
+    m_Weight: 0
+  - m_Path: MainMesh
+    m_Weight: 1

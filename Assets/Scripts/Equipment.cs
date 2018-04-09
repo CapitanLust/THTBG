@@ -19,6 +19,7 @@ public class Equipment // : ScriptableObject // not anymore
     public bool Diffusing = false;
     public bool AreaSizeDependsOnDistance = false;
     // TODO to have own cursor
+    
 }
 
 //[CreateAssetMenu(menuName = "Equipment/Weapon")]

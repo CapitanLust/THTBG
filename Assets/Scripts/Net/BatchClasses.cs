@@ -8,74 +8,56 @@ using UnityEngine.UI;
 using System.Runtime.Serialization.Formatters.Binary;
 
 
-    
-[Obsolete]
-[Serializable]
-public class Batch
-{
-    /*
-    public byte[] Serialized
-    {
-        get
-        {
-            return Cmn.SerializeBatch(this);
-        }
-    }
-    public static Batch Deserialize (byte[] barray)
-    {
-        return Cmn.DeserializeTurn(barray);
-    }
-    */
-    //public string PlayerOwnerNik;
-
-    [NonSerialized]
-    public Player Owner;
-
-    // it was designed for abstract. But we can't use abst with u.networking
-    public virtual void Perform() {} // TODO remove from here.
-}
 
 [Serializable]
 public class Turn
 {
-    // private logic but 'public'
+    /*
     public List<TurnAction> actions
-        = new List<TurnAction>();
+        = new List<TurnAction>();*/
+    public List<TurnAction> actions_Upside   = new List<TurnAction>(),
+                            actions_Downside = new List<TurnAction>();
 
     [NonSerialized]
     public Player Owner;
 
     [NonSerialized]
-    public int actionsDid = 0;
+    public int actionsDid_Up = 0;
+    [NonSerialized]
+    public int actionsDid_Down = 0;
     [NonSerialized]
     public bool Performing = false;
 
-    public void Perform()
-    {
-        //if (Iterate() || actionsDid >= actions.Count)
-                      // /\ second check because of -- if we complete it for 1 step.
-                     // ( solution designed for performing through Update and frame-logic )
-            //Owner.CmdSetReady();
-        // /\ complitely moved to update
-    }
+    [Obsolete]
+    public void Perform() { }
 
     public void Clear()
     {
-        actions.Clear();
-        actionsDid = 0; 
+        actions_Upside.Clear();
+        actions_Downside.Clear();
+        actionsDid_Up = 0;
+        actionsDid_Down = 0;
     }
 
     public void ClearOfUnconfirmed()
     {
-        actions = actions.FindAll(x => x.Confirmed);
+        actions_Upside = actions_Upside.FindAll(x => x.Confirmed);
+        actions_Downside = actions_Downside.FindAll(x => x.Confirmed);
     }
 
     public bool Iterate()
     {
-        if (actionsDid >= actions.Count) return true;
+        if ( actionsDid_Up   >= actions_Upside.Count &&
+             actionsDid_Down >= actions_Downside.Count )
+                return true;
 
-        if (actions[actionsDid].Action())
-            actionsDid++;
+        if ( actionsDid_Up<actions_Upside.Count && 
+             actions_Upside[actionsDid_Up].Action() )
+                actionsDid_Up++;
+
+        if ( actionsDid_Down<actions_Downside.Count &&
+             actions_Downside[actionsDid_Down].Action() )
+                actionsDid_Down++;
 
         return false;
     }
@@ -144,6 +126,11 @@ public abstract class TurnAction
 
 }
 
+
+//  No functional facilities.
+//  Just for more formal distinguish of TurnAction
+public interface Up { }
+public interface Down { }
 
 public interface IUsingFloorCursor
 {

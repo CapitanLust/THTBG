@@ -46,7 +46,7 @@ public class GameManager : NetworkBehaviour {
         data = GameObject.Find("Data").GetComponent<Data>();
 
         lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
-        networkManager = lobby.netManager;
+        networkManager = NetworkManager.s_Instance;
 
         onEachPlayerReady = OnEachReady_Decision;
 
@@ -178,7 +178,7 @@ public class GameManager : NetworkBehaviour {
 
     public void ExitMatch()
     {
-
+        lobby.ExitMatch();
     }
 
     
@@ -194,12 +194,9 @@ public class GameManager : NetworkBehaviour {
         RpcOnEndMatch();
         ui.btn_ExitMatch.SetActive(true);
     }
+
     [ClientRpc]
     public void RpcOnEndMatch()
-    {
-        OnEndMatch();
-    }
-    public void OnEndMatch()
     {
         IsMatchStarted = false;
         foreach (var p in players)

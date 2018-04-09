@@ -5,8 +5,12 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-public static class Cmn {
-
+public static class Cmn
+{
+    public static int player_id = 1;
+    public static int Money = 100;
+    public static int XP = 150;
+    
     public static string Nik;
     public static string Weapon;
 

@@ -33,8 +33,10 @@ public class Player : NetworkBehaviour, IInitialState {
     public bool performing = false;
 
     public Action update;       
-    public Action inputHandler 
-        = () => { };
+    public Action inputHandler,
+                  inputHandler_Up =()=>{},
+                  inputHandler_Down =()=>{};
+
 
     public PlayerAvatar avatar;
 
@@ -68,24 +70,23 @@ public class Player : NetworkBehaviour, IInitialState {
     {
         base.OnStartAuthority();
 
-        // though object creates only on this scene. Anyway:
-        if (SceneManager.GetActiveScene().name == "Lobby")
-        {
+        //if (SceneManager.GetActiveScene().name == "PreLobby") Player borns in PreLobby
+        //{
             CmdSetMyParameters(Cmn.Nik, Cmn.PlayerColor);
             CmdSetLoadout(Cmn.Weapon, "", "");
-        }
+        //}
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
 
-        if (SceneManager.GetActiveScene().name == "Lobby")
-        {
+        //if (SceneManager.GetActiveScene().name == "PreLobby")
+        //{
             var lobby = GameObject.Find("Lobby").GetComponent<Lobby>();
             if (ReadyToRegistrate && !lobby.players.Contains(this))
                 lobby.AddPlayer(this);
-        }
+        //}
         
         DontDestroyOnLoad(gameObject);
     }
@@ -150,9 +151,10 @@ public class Player : NetworkBehaviour, IInitialState {
         turn = Turn.Deserialize(barray) as Turn;
         turn.Owner = this; //       Important!  
 
-        foreach (var ta in turn.actions)
+        foreach (var ta in turn.actions_Downside)
             ta.SyncNonSync(turn);
-
+        foreach (var ta in turn.actions_Upside)
+            ta.SyncNonSync(turn);
     }
 
 
@@ -173,12 +175,20 @@ public class Player : NetworkBehaviour, IInitialState {
             FixateState();
 
             if (isAlive)
-                turn.actions.Add(new MoveAction(turn));
-            else       
-                if(gameManager.ruler.CanRevive(this))
-                    turn.actions.Add(new SpawnAction(turn));
+            {
+                turn.actions_Upside.Add(new LookArountAction(turn, avatar.transform.forward));
+                turn.actions_Downside.Add(new MoveAction(turn));
+            }
+            else
+                if (gameManager.ruler.CanRevive(this))
+                turn.actions_Upside.Add(new SpawnAction(turn));
 
-            inputHandler = turn.actions[0].InputHandler;
+            inputHandler_Up = turn.actions_Upside[0].InputHandler;
+            if (turn.actions_Downside.Count > 0)
+                inputHandler_Down = turn.actions_Downside[0].InputHandler;
+            else
+                inputHandler_Down = ()=>{};
+            inputHandler = InputHandler_UpDownSides;
 
             update = Update_Game_Decision;
         }
@@ -188,9 +198,19 @@ public class Player : NetworkBehaviour, IInitialState {
     }
 
 
-    public void SetInputHandlerOnLast()
+    public void InputHandler_UpDownSides()
     {
-        inputHandler = turn.actions[turn.actions.Count - 1].InputHandler;
+        inputHandler_Up();
+        inputHandler_Down();
+    }
+
+    public void SetInputHandlerOnLast_Up()
+    {
+        inputHandler_Up = turn.actions_Upside[turn.actions_Upside.Count - 1].InputHandler;
+    }
+    public void SetInputHandlerOnLast_Down()
+    {
+        inputHandler_Down = turn.actions_Downside[turn.actions_Downside.Count - 1].InputHandler;
     }
 
 
@@ -214,10 +234,10 @@ public class Player : NetworkBehaviour, IInitialState {
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                CmdSyncTurn(turn.Serialized);
-
                 ReturnToInitialTurnState();
                 gameManager.ui.SetActiveOfFloorCursor(false);
+
+                CmdSyncTurn(turn.Serialized);
 
                 CmdSetReady();
             }

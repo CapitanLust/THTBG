@@ -9,9 +9,9 @@ public class MP1 : WeaponHandler {
         base.Shoot(tAction);
     }
 
-    public override void MeasureAftermath(TurnAction tAction)
+    public override void MeasureAftermath()
     {
-        base.MeasureAftermath(tAction);
+        base.MeasureAftermath();
     }
 
 }

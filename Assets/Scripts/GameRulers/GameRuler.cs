@@ -12,6 +12,8 @@ public abstract class GameRuler : MonoBehaviour {
 
     public bool FriendlyFire = false;
 
+    public List<Team> Teams;
+
     public virtual int CountOfPendingPlayers
     {
         get
@@ -34,5 +36,12 @@ public abstract class GameRuler : MonoBehaviour {
     }
 
     public virtual bool CanRevive(Player p) { return false; }
+
+
+    public class Team
+    {
+        public string Name; // i.e. "Orange"
+        public List<Player> Players;
+    }
 
 }

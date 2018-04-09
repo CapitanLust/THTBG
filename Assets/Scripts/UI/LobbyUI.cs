@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LobbyUI : MonoBehaviour {
@@ -9,6 +10,24 @@ public class LobbyUI : MonoBehaviour {
     public Button btn_StartGame;
 
     public Lobby lobby;
+
+    public void OnSceneChangedFromLobby(Lobby lobby)
+    {
+        this.lobby = lobby;
+
+        //lobby.onStartServer +=()=> btn_StartGame.gameObject.SetActive(true);
+
+        //lobby.onAddPlayer +=()=> UpdateTxServerList();
+
+        UpdateTxServerList(); // for those, who already there
+        if(lobby.isServer)    // and if lobby will been loaded after ServerStart
+            btn_StartGame.gameObject.SetActive(true);
+    }
+
+    public void Btn_StartGame()
+    {
+        lobby.StartGame();
+    }
 
     public void UpdateTxServerList()
     {
