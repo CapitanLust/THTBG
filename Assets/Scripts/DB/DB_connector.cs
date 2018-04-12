@@ -61,6 +61,8 @@ static public class DataBaseConnector
 
         yield return authentication;
 
+        Debug.Log(authentication.text);
+
         string[] result = authentication.text.Split('|');
         v.ConfirmSignIn = result[0].Trim() == "confirm";
         v.ID = v.ConfirmSignIn ? int.Parse(result[1]) : -1;

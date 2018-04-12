@@ -314,7 +314,7 @@ public class Shop : MonoBehaviour
     public void AddItem (Item item)
     {
         Instantiate(itemPrefab, contentPanel)
-            .InitShopItem(item, this);
+          .InitShopItem(item, this);
     }
     
     private string FilterSliderValue2ItemType()

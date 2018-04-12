@@ -402,13 +402,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item:
     Image: {fileID: 0}
+    ID: 0
     Name: 
     Description: 
     Type: 
     Price: 0
     Level: 0
     IsBought: 0
-  btn_Action: {fileID: 0}
   image: {fileID: 114417723757934926}
   tx_Price: {fileID: 114389841576549208}
   tx_Name: {fileID: 114194997873536454}
